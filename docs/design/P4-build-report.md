@@ -19,8 +19,8 @@ Status: **Build complete; measurement not started.** Written 2026-10-22. Everyth
 
 | Part | Count | Where |
 | --- | --- | --- |
-| Skills (commands) | 10 | `skills/` |
-| Agents | 8 | `agents/` |
+| Skills (commands) | 12 (`/pilot:migrate` and `/pilot:audit` added in the completion pass) | `plugin/skills/` |
+| Agents | 9 (`design-reviewer` added in the completion pass) | `plugin/agents/` |
 | Hooks | 7 + shared library | `hooks/` |
 | Workflows | 2 | `workflows/` |
 | Output style | 1 | `output-styles/direct.md` |
@@ -35,9 +35,9 @@ Status: **Build complete; measurement not started.** Written 2026-10-22. Everyth
 
 | Check | Result | How |
 | --- | --- | --- |
-| Unit, CLI and golden tests (L1) | **57 / 57 pass** | `npm test` on Windows |
+| Unit, CLI, golden, design, migration and audit tests (L1) | **76 / 76 pass** (57 at first build) | `npm test` on Windows |
 | Plugin validation (C-validate) | **Passed**, strict mode, for the marketplace and the plugin manifest | `claude plugin validate --strict` |
-| Always-on context cost (C-budget) | **~688 tokens** (budget 1,500) | `claude plugin details pilot` |
+| Always-on context cost (C-budget) | **~688 tokens** at first build (budget 1,500). The completion pass adds 2 user-only skills and 1 agent, estimated at about +130 tokens. Re-measure with `npm run check:budget` | `claude plugin details pilot` |
 | Registry consistency (C-registry) | **44 rows, 28 component files, consistent** | `npm run check:registry` |
 | Hooks inert outside pilot projects (F08) | **7 / 7** | `tests/hooks/guard.test.js` |
 | Fresh projects pass their own checks | **3 / 3** project types | `tests/golden.test.js` |
@@ -177,9 +177,33 @@ The benchmark's pilot arm now loads `plugin/` directly, so the separate stripped
 
 Paths in P2 and P3 refer to the layout before this change. Read `skills/…` there as `plugin/skills/…`, and likewise for `agents/`, `hooks/`, `workflows/`, `output-styles/`, `templates/`, `scripts/pilot.js` and `scripts/lib/`.
 
+## 7c. Completion pass (after the layout change)
+
+The four pieces left unfinished at first build are now built and tested.
+
+| Piece | What it adds | Proof |
+| --- | --- | --- |
+| Design | Starter `DESIGN.md` (7 required rule sections) and `tokens.json` (W3C design-token format, starter values that pass WCAG AA). `pilot.js design-init` and `design-check`: token structure, contrast of every declared text/background pair, required sections, warnings for hard-coded colors. design-check also runs in project CI (pilot-check). A `design-reviewer` agent, used by `/pilot:step` and the `verify-change` workflow for UI changes. The preview page shows each contrast pair with pass or fail | `tests/scripts/design.test.js` (6 tests, including WCAG ratios checked against known values) |
+| Migrate | `/pilot:migrate` and its runner. Untouched files update automatically. Edited or untracked files need approval and show a line diff. Every changed file is backed up first, and nothing is deleted. Declined changes are recorded and not asked again. Migrations chain (v1→v2→v3), and transforms are idempotent | `tests/scripts/migrate.test.js`: untouched, edited, half-migrated, run-twice and chained golden projects |
+| Audit | `/pilot:audit` (maintainer tool) and `scripts/audit.js`. Applies the P3 pre-registered rules to every REGISTRY row: keep, retire-candidate, fix, enforcement, no-evidence. `scripts/record-evals.js` keeps `docs/audits/eval-history.jsonl` | `tests/scripts/audit.test.js` |
+| Review pass | 11 fixes, listed below | Each fix has a test |
+
+**Review-pass fixes**, most serious first:
+
+1. **Missing Node no longer blocks reads.** The secret-file read guard fails open, because project deny rules still cover secrets. Only the edit and command guards fail closed.
+2. **New files are scanned for TODOs.** The end-of-turn check now also scans untracked new files for a TODO or FIXME without an issue number. It used to see only git's diff.
+3. **Test runs no longer mark the session as changed.** Test, lint and type-check runs without fix or update flags count as read-only.
+4. **Editing docs no longer triggers the code checks.** Edits to markdown files and pilot's own files leave the session clean.
+5. **The project CI template uses the project's own scripts.** It calls the project's coverage and mutation scripts instead of assuming specific tools. Roadmap step 1 creates those scripts.
+6. **`/pilot:step` records its starting commit,** so the review covers exactly the step's changes, uncommitted ones included.
+7. **`/pilot:doctor` fails CI that still names the OWNER placeholder.**
+8. **Scaffolding defaults to the pro profile** when the interview gives none. It used to crash.
+9. **The injection scanner treats files on another Windows drive as outside the project.**
+10. **`/pilot:status` checks when the issue mirrors were last synced.** It used to have no way to know.
+11. **The helper no longer passes argument lists to a shell.** That removes a Node deprecation warning and an escaping risk.
+
 ## 8. Known limits of v1
 
 - **Review verdicts.** The orchestrating session writes the reviewer's verdict to a file before `pilot.js review` records it. The acceptance exit code is real evidence. The verdict is only as honest as the orchestrator's copy of the reviewer's output. The benchmark's blind reviewer measures whether this matters.
 - **Injection scanning.** The scanner (H07) uses patterns. It flags obvious planted instructions, not clever ones. The real protection is that deny rules and H03 block the damaging actions whatever Claude decides.
 - **Node is required.** The guards fail closed, so a machine without Node on PATH gets blocked edits in pilot projects, and in every project if the plugin is enabled globally, until Node is installed. The README says so.
-- **`/pilot:migrate` is not built yet.** v1 records the version and file fingerprints it will need.
