@@ -211,6 +211,7 @@ Every hook gets a test file. Each test pipes a recorded JSON payload into the sc
 | T-sync | sync helpers | Fixture `gh issue list` JSON → expected BUGS.md, PROBLEMS.md, RESOLVED.md |
 | T-preview | render-preview | Same tokens produce byte-identical HTML |
 | T-schema | schemas | Each schema accepts its example and rejects 3 broken ones |
+| T-settings | templates/settings | `base.json` merged with each profile and pack is valid against the settings schema; deny list contains every secret pattern; `gh issue create` is in `ask` |
 
 ---
 
