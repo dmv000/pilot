@@ -8,6 +8,16 @@ Status: **Draft, waiting for owner review at the P2 gate.** Written 2026-10-22 a
 
 ---
 
+## Answers recorded 2026-10-22
+
+| Question | Decision |
+| --- | --- |
+| 1. Stack packs | `web-ts` and `generic` in v1; others when a real project needs them |
+| 2. End-of-turn check | H05 blocks: Claude cannot end a turn that changed code while `checks.fast` fails |
+| 3. Bug reports | Claude may draft them; `gh issue create` stays in `ask`, so each needs owner approval |
+| 4. Mutation testing | Weekly scheduled run and on demand, not per change |
+| 5. GitHub owner | Still open; needed before publishing in P4 |
+
 ## Questions for the owner (answer before P3)
 
 In plain terms, each question below is a choice about how strict or how broad the first version should be.
