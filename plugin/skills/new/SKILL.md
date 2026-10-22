@@ -19,7 +19,7 @@ You run this in the main session. Subagents cannot ask the owner questions, so n
 
 ## 1. Interview
 
-Read [questions.md](questions.md) and [project-types.md](project-types.md) now.
+Read [questions.md](questions.md) and [project-types.md](project-types.md) now. Read [architecture.md](architecture.md) when you reach Phase 7b (Architecture and scale).
 
 Rules:
 - Ask in rounds of 2–4 multiple-choice questions with AskUserQuestion. "Other" is always available automatically.
@@ -66,7 +66,11 @@ Show the list to the owner and get one approval for the whole batch.
    - **TEST-STRATEGY.md, SECURITY.md, GLOSSARY.md, RUNBOOK.md** from the answers.
    - **AI docs** when `hasAI` is true.
    - **ASSUMPTIONS.md:** one `### A-001 …` per recorded assumption.
-3. Dispatch `pilot:architect` (model: opus) with the paths of PRD.md and SRS.md. It drafts TECH-SPEC.md and the ADRs, including the stack decision.
+3. Dispatch `pilot:architect` (model: opus) with the paths of PRD.md and SRS.md, plus the owner's architecture and scale answers from Phase 7b: load tier, chosen style, patterns and alternatives considered. It drafts:
+   - TECH-SPEC.md, including the Architecture style, Design patterns and Scalability and load sections
+   - the ADRs: stack, and architecture (0002)
+   - `.claude/rules/architecture.md`
+   - the fitness-function task for roadmap Step 1
 4. Run, in order:
    - `node "${CLAUDE_PLUGIN_ROOT}/scripts/pilot.js" record` to fingerprint the filled files
    - `… trace --write`

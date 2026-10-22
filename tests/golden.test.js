@@ -56,3 +56,16 @@ test('scaffold without a profile defaults to pro; CI points at the real pilot-ch
   fs.writeFileSync(ci, fs.readFileSync(ci, 'utf8').replace('dmv000/pilot', 'OWNER/pilot'));
   assert.match(runPilot(['doctor', '--project', dir]).stdout, /FAIL\s+CI calls pilot-check: present, but the action owner is still the OWNER placeholder/);
 });
+
+test('new projects get the architecture and scale sections, and the interview guide ships with the plugin', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pilot-golden-arch-'));
+  const answers = path.join(os.tmpdir(), `answers-${path.basename(dir)}.json`);
+  fs.writeFileSync(answers, JSON.stringify({ project_name: 'Arch', projectType: 'web-app', stack: 'web-ts', profile: 'pro', hasAI: false, design: 'pending' }));
+  assert.equal(runPilot(['scaffold', '--project', dir, '--answers', answers]).code, 0);
+  const spec = fs.readFileSync(path.join(dir, 'docs/requirements/TECH-SPEC.md'), 'utf8');
+  for (const h of ['## Architecture style', '## Design patterns', '## Scalability and load']) assert.match(spec, new RegExp(`^${h}$`, 'm'), h);
+  assert.match(fs.readFileSync(path.join(dir, 'docs/requirements/SRS.md'), 'utf8'), /^### NFR-002 Capacity and response time$/m);
+  const guide = fs.readFileSync(path.join(PLUGIN, 'skills/new/architecture.md'), 'utf8');
+  for (const s of ['Clean / hexagonal', 'Modular monolith', 'Microservices', 'Circuit breaker', 'Read replicas']) assert.ok(guide.includes(s), s);
+  assert.match(fs.readFileSync(path.join(PLUGIN, 'skills/new/questions.md'), 'utf8'), /^## Phase 7b — Architecture and scale$/m);
+});

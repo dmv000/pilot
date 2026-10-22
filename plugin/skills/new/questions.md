@@ -42,6 +42,26 @@ For each MVP feature, confirm the observable behavior: "When <someone> does <act
 - Do you already have a preference for language/framework/hosting? If not, say you will research 2–3 options and show the trade-offs (research-stack).
 - Where will it run? Options that fit the project type.
 
+## Phase 7b — Architecture and scale
+
+Read [architecture.md](architecture.md) before this phase. Ask about needs first, never "which architecture do you want?" as an opening question. Most owners cannot answer that, and the needs decide it.
+
+- How many people will use it at the same time: in the first months, and in one or two years? Options: a handful; hundreds; thousands; hundreds of thousands or more. Explain that this decides how much "scale" machinery is worth building now.
+- Is the traffic steady, or are there sudden peaks? Options: steady; daily peaks; rare huge spikes (sales, launches); unknown.
+- How fast must the main action respond, and how bad is downtime? This links to Phase 6; reuse those answers.
+- How many developers will work on it, and must parts be released separately? Options: just me; one small team; several teams. Explain that several independent teams is the main real reason for microservices.
+- Are there heavy or slow jobs: reports, imports, AI calls, video, emails? These usually belong in a background queue.
+- Must data always be exactly up to date everywhere (bank balance), or is "correct within seconds" fine (like counts)?
+- Will it ever need to run in several regions or countries, or work offline?
+
+Then:
+1. Pick the load tier from architecture.md section 3.
+2. Propose one architecture style from section 1 and the few patterns from section 2 that solve named problems. Give each in one plain sentence with its cost. Offer one simpler and one more scalable alternative.
+3. If the owner says "I don't know", recommend the simplest style that meets the answers, usually a modular monolith with clean-architecture layers inside. Log it in ASSUMPTIONS.md.
+4. Turn the load answers into NFRs with numbers in SRS.md: capacity, latency, availability and a load test.
+
+Record the choice and pass it to the architect, who writes the Tech Spec sections, the ADR, `.claude/rules/architecture.md` and the fitness-function step (architecture.md section 4).
+
 ## Phase 8 — Data and integrations
 
 - What are the main things it stores? (entities)

@@ -35,7 +35,15 @@ The user interface shall meet WCAG 2.2 level AA.
 - Threshold: zero axe-core violations of level A or AA on every page
 - Checked by: automated accessibility test in CI
 
-### NFR-002 {{title}}
+### NFR-002 Capacity and response time
+
+The system shall serve {{N}} concurrent users at {{R}} requests per second with 95% of requests answered within {{T}} ms, and stay available {{99.x}}% of each month.
+
+- Category: performance efficiency and reliability (ISO 25010)
+- Threshold: {{numbers from the interview's architecture and scale phase}}
+- Checked by: load test script ({{k6 or similar}}) run before release
+
+### NFR-003 {{title}}
 
 {{statement with a measurable threshold}}
 

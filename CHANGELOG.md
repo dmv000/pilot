@@ -2,6 +2,13 @@
 
 ## 0.1.0 (unreleased)
 
+Architecture and scale:
+
+- The interview has a new "Architecture and scale" phase. It asks about load, peaks, team size, slow jobs and consistency, then recommends the simplest fitting style: layered, clean/hexagonal, modular monolith, microservices, event-driven or serverless.
+- New guide `plugin/skills/new/architecture.md` covers styles, design patterns and the scale toolkit by load tier.
+- The Tech Spec template gains Architecture style, Design patterns, and Scalability and load sections. The SRS template gains a capacity NFR.
+- The architect agent writes the architecture ADR, a path-scoped architecture rule, and a fitness-function task that enforces the dependency rule.
+
 Completion pass:
 
 - `/pilot:design` starts from templates. design-check verifies token structure and WCAG contrast. A design-reviewer agent reviews UI changes.

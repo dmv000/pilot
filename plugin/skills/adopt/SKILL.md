@@ -23,6 +23,10 @@ Every line names the file it came from.
 
 From the map, prepare drafts of PRD.md, SRS.md and TECH-SPEC.md. Mark every derived statement `(derived from code: <path>)`. Requirements you infer get FR IDs. Behavior already covered by tests gets `Verified by:` pointing at those tests.
 
+## 2b. Identify the current architecture
+
+Using `../new/architecture.md`, name the style the code actually follows today (layered, clean/hexagonal, modular monolith, ...), the patterns in use, and where the code breaks its own boundaries (for example database calls inside UI components). Tell the owner in plain words, and ask whether to keep the current style or move toward another. Moving is a roadmap of small steps, never a rewrite.
+
 ## 3. Interview for the gaps only
 
 Use the question bank in `../new/questions.md`, with the same plain-language rules as `/pilot:new`. Ask only what the code cannot tell you:

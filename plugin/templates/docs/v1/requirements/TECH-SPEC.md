@@ -20,6 +20,32 @@ flowchart LR
 
 - {{constraint}}
 
+## Architecture style
+
+- Style: {{simple layered | clean/hexagonal | modular monolith | microservices | event-driven | serverless | other}} (see ADR-0002)
+- Why: {{one or two sentences, each tied to a requirement ID or constraint}}
+- Load tier: {{0 | 1 | 2 | 3}} (from the interview; numbers are in the SRS capacity NFRs)
+- Dependency rule: {{for example: domain imports nothing from adapters or frameworks}}. Enforced by {{fitness function, for example dependency-cruiser / import-linter}} in `checks.full`.
+- Revisit when: {{the condition that would change this choice}}
+
+## Design patterns
+
+| Pattern | Where | Problem it solves |
+| --- | --- | --- |
+| {{pattern}} | {{module or path}} | {{named problem; a pattern without one is removed}} |
+
+## Scalability and load
+
+| Concern | Approach | Proven by |
+| --- | --- | --- |
+| Concurrent users and throughput | {{stateless instances, autoscaling, ...}} | {{load test script and NFR ID}} |
+| Hot reads | {{indexes, cache-aside with TTL, CDN}} | {{test}} |
+| Slow or spiky work | {{queue and background workers}} | {{test}} |
+| Abuse and overload | {{rate limiting, backpressure}} | {{test}} |
+| Outside dependencies failing | {{timeouts, retries with backoff, circuit breaker, graceful degradation}} | {{test}} |
+| Data growth | {{pagination, archiving, partitioning when needed}} | {{test}} |
+| Observability | {{logs, metrics, traces; SLO alerts}} | {{dashboard or alert}} |
+
 ## Solution strategy
 
 - {{decision}} (see ADR-0001)
