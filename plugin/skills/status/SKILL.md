@@ -6,7 +6,7 @@ allowed-tools: Bash(node *scripts/pilot.js*), Bash(git status)
 
 # /pilot:status
 
-1. If `docs/issues/BUGS.md` is older than 24 hours, run `node "${CLAUDE_PLUGIN_ROOT}/scripts/pilot.js" sync` first. If gh is unavailable, say so and continue with the existing mirrors.
+1. Find when the mirrors were last synced: `git log -1 --format=%cr -- docs/issues/BUGS.md`, or the file's modified time if it is not committed. If that is more than 24 hours ago, run `node "${CLAUDE_PLUGIN_ROOT}/scripts/pilot.js" sync` first. If gh is unavailable, say so and continue with the existing mirrors.
 2. Read `docs/planning/PROGRESS.md`, `docs/planning/HANDOFF.md`, `docs/issues/BUGS.md`, `docs/issues/PROBLEMS.md`, `docs/issues/PENDING.md` and `.pilot/manifest.json`.
 3. Report in this order, short and plain:
    - **Steps:** done / in progress / to do, with the next step.

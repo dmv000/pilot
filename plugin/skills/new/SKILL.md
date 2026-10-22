@@ -62,7 +62,7 @@ Show the list to the owner and get one approval for the whole batch.
 2. Fill the docs from the interview. Replace every `{{placeholder}}` you have an answer for:
    - **PRD.md:** vision, users, scope, non-goals, stories `### US-001 …` with Gherkin acceptance criteria.
    - **SRS.md:** `### FR-001 …` in EARS syntax, each with `Traces to: US-…`; `### NFR-…` with measurable thresholds.
-   - **ROADMAP.md:** Step 1 is always "Skeleton: toolchain, the three check commands, CI green". Later steps are small, each listing its stories.
+   - **ROADMAP.md:** Step 1 is always "Skeleton: toolchain, the three check commands, CI green". For web-ts it also adds the `coverage` script (Cobertura XML at coverage/cobertura-coverage.xml) and the `mutation` script that the CI template calls. Later steps are small, each listing its stories.
    - **TEST-STRATEGY.md, SECURITY.md, GLOSSARY.md, RUNBOOK.md** from the answers.
    - **AI docs** when `hasAI` is true.
    - **ASSUMPTIONS.md:** one `### A-001 …` per recorded assumption.

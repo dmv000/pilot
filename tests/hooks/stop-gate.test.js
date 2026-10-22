@@ -83,3 +83,32 @@ test('stop-gate: no fast check configured warns but does not block', () => {
   assert.notEqual(r.json?.decision, 'block');
   assert.match(r.json?.systemMessage ?? '', /checks\.fast/);
 });
+
+test('track-edits: docs and pilot files do not mark dirty; test runs without fix flags do not either', () => {
+  const dir = tmpProject();
+  post(dir, 'Edit', { file_path: dir + '/docs/planning/HANDOFF.md' });
+  post(dir, 'Write', { file_path: dir + '/README.md' });
+  post(dir, 'Bash', { command: 'npm test' });
+  post(dir, 'Bash', { command: 'npm run check:fast' });
+  post(dir, 'Bash', { command: 'npx vitest run tests/a.test.ts' });
+  post(dir, 'Bash', { command: 'python3 -m unittest discover -s tests' });
+  assert.notEqual(state(dir).dirty, true);
+  post(dir, 'Bash', { command: 'npx vitest run -u' });
+  assert.equal(state(dir).dirty, true);
+  write(dir, '.pilot/state.json', '{}');
+  post(dir, 'Bash', { command: 'npm run lint -- --fix' });
+  assert.equal(state(dir).dirty, true);
+});
+
+test('stop-gate: a TODO in a new untracked file blocks too', () => {
+  const dir = tmpProject({ manifest: { checks: { fast: 'node -e "process.exit(0)"' } } });
+  const git = (...a) => spawnSync('git', a, { cwd: dir, encoding: 'utf8' });
+  git('init', '-q'); git('config', 'user.email', 't@t'); git('config', 'user.name', 't');
+  write(dir, 'README.md', '# x\n');
+  git('add', '-A'); git('commit', '-qm', 'init');
+  write(dir, 'src/new.ts', 'export const n = 1; // FIXME edge cases\n');
+  write(dir, '.pilot/state.json', '{"dirty":true}');
+  const r = stop(dir);
+  assert.equal(r.json?.decision, 'block');
+  assert.match(r.json.reason, /src\/new\.ts: .*FIXME/);
+});

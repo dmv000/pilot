@@ -2,7 +2,7 @@
 name: step
 description: Execute one pilot roadmap step end to end (acceptance tests first, implement, verify, review, update progress). Use when the user says "start step N", "next step" or "continue".
 argument-hint: "<step number>"
-allowed-tools: Bash(node *scripts/pilot.js*), Bash(git diff *), Bash(git status), Bash(git log *)
+allowed-tools: Bash(node *scripts/pilot.js*), Bash(git diff *), Bash(git status), Bash(git log *), Bash(git rev-parse *)
 ---
 
 # /pilot:step — one roadmap step
@@ -26,6 +26,7 @@ Never use fable unless the owner approves it after two failed rounds. It bills u
 ## 1. Locate
 
 1. Read `docs/planning/HANDOFF.md`. If step N is not the next step, stop and ask the owner.
+   Record the starting commit with `git rev-parse HEAD`. This is `diffBase`: the review compares the working tree against it (`git diff <diffBase>`), so uncommitted work is included.
 2. Read the `## Step N` section of `docs/planning/ROADMAP.md`. Collect its story IDs.
 3. For each story, grep `docs/requirements/SRS.md` for FR/NFR sections whose `Traces to:` names it, and read only those sections. Grep PRD.md for the story heading and read its Gherkin.
 4. Read the TECH-SPEC.md `Module:` sections the FRs name, and the ADRs they link.
@@ -43,7 +44,7 @@ Dispatch `pilot:implementer` once per story (template B), sequentially. It may n
 
 ## 4. Verify and review
 
-1. Get the diff range: `git diff <step start>..HEAD`, or the working tree.
+1. The change under review is `git diff <diffBase>` (committed and uncommitted work since the step started).
 2. Run the `verify-change` workflow with the Workflow tool (args: `{ step, frIds, diffBase, risky, ui, pluginRoot: "${CLAUDE_PLUGIN_ROOT}" }`).
    - Set `risky` true when the diff touches auth, input handling, secrets, payments or dependencies.
    - Set `ui` true when the diff touches user-facing UI files (.tsx, .jsx, .vue, .svelte, .css, .html) and `docs/design/DESIGN.md` exists.

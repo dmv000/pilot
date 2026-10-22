@@ -223,7 +223,7 @@ const commands = {
     const handoff = read(path.join(project, 'docs/planning/HANDOFF.md'));
     if (handoff) add('HANDOFF.md <= 8,000 chars', handoff.length <= 8000, `${handoff.length} chars`, 'run /pilot:handoff');
     const ci = read(path.join(project, '.github/workflows/ci.yml'));
-    add('CI calls pilot-check', !!ci && /pilot-check/.test(ci), ci ? (/OWNER\//.test(ci) ? 'present, but the action owner is still the OWNER placeholder' : 'present') : 'no .github/workflows/ci.yml', 'replace OWNER in ci.yml with the GitHub owner of the pilot repo');
+    add('CI calls pilot-check', !!ci && /pilot-check/.test(ci) && !/OWNER\//.test(ci), ci ? (/OWNER\//.test(ci) ? 'present, but the action owner is still the OWNER placeholder' : 'present') : 'no .github/workflows/ci.yml', 'replace OWNER in ci.yml with the GitHub owner of the pilot repo');
     if (opts.bench) {
       for (const [bin, flag] of [['bwrap', '--version'], ['socat', '-V']]) add(`bench: ${bin}`, !!ver(bin, flag), ver(bin, flag) ?? 'not found', 'sudo apt-get install bubblewrap socat (inside WSL2)');
       const tokenFile = path.join(process.env.HOME ?? '', '.config/pilot-bench/token');

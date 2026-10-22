@@ -28,9 +28,14 @@ jobs:
       - run: {{checks.acceptance}}
       - name: Coverage on changed lines (80%)
         if: github.event_name == 'pull_request'
+        # The project's "coverage" script must write Cobertura XML to coverage/cobertura-coverage.xml (set up in roadmap step 1).
         run: |
-          npx vitest run --coverage --coverage.reporter=cobertura
-          pipx run diff-cover coverage/cobertura-coverage.xml --compare-branch=origin/${{ github.base_ref }} --fail-under=80
+          npm run coverage --if-present
+          if [ -f coverage/cobertura-coverage.xml ]; then
+            pipx run diff-cover coverage/cobertura-coverage.xml --compare-branch=origin/${{ github.base_ref }} --fail-under=80
+          else
+            echo "::error::No coverage/cobertura-coverage.xml. Add a 'coverage' npm script (roadmap step 1)."; exit 1
+          fi
   pilot-check:
     if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
@@ -54,4 +59,5 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 24, cache: npm }
       - run: npm ci
-      - run: npx stryker run
+      # The project's "mutation" script runs the mutation tester chosen in the stack ADR (for example Stryker).
+      - run: npm run mutation

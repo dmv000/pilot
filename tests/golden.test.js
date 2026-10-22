@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { runPilot, runHook, decision, abs } from './helpers.js';
+import { runPilot, runHook, decision, abs, PLUGIN } from './helpers.js';
 
 for (const [stack, projectType, hasAI] of [['web-ts', 'web-app', false], ['generic', 'ai-system', true], ['generic', 'script', false]]) {
   test(`golden ${stack}/${projectType}: scaffold, check, hooks`, () => {
@@ -34,3 +34,22 @@ for (const [stack, projectType, hasAI] of [['web-ts', 'web-app', false], ['gener
     else assert.match(ctx, /Design system not created yet/);
   });
 }
+
+test('hooks.json: edit and shell guards fail closed; the read guard and the rest fail open', () => {
+  const h = JSON.parse(fs.readFileSync(path.join(PLUGIN, 'hooks', 'hooks.json'), 'utf8')).hooks;
+  const entry = m => h.PreToolUse.find(e => e.matcher === m).hooks[0];
+  assert.equal(entry('Edit|Write|NotebookEdit').onFailure, 'block');
+  assert.equal(entry('Bash|PowerShell').onFailure, 'block');
+  assert.equal(entry('Read').onFailure, undefined);
+  for (const ev of ['SessionStart', 'PostToolUse', 'Stop']) for (const g of h[ev]) for (const x of g.hooks) assert.equal(x.onFailure, undefined, ev);
+});
+
+test('scaffold without a profile defaults to pro; doctor fails CI that still names OWNER', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pilot-golden-noprofile-'));
+  const answers = path.join(os.tmpdir(), `answers-${path.basename(dir)}.json`);
+  fs.writeFileSync(answers, JSON.stringify({ project_name: 'NoProfile', projectType: 'web-app', stack: 'web-ts', hasAI: false, design: 'pending' }));
+  assert.equal(runPilot(['scaffold', '--project', dir, '--answers', answers]).code, 0);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(dir, '.claude/settings.json'), 'utf8')).model, 'opusplan');
+  const doc = runPilot(['doctor', '--project', dir]);
+  assert.match(doc.stdout, /FAIL\s+CI calls pilot-check: present, but the action owner is still the OWNER placeholder/);
+});

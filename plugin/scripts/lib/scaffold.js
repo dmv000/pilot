@@ -44,7 +44,7 @@ export function plan(project, answers) {
   }
   add('CLAUDE.md', 'project/CLAUDE.md', 'project', true);
   add('.worktreeinclude', 'project/worktreeinclude', 'project');
-  add('.claude/settings.json', `settings:${pack}:${answers.profile}`, 'settings', true);
+  add('.claude/settings.json', `settings:${pack}:${answers.profile === 'max' ? 'max' : 'pro'}`, 'settings', true);
   for (const rel of walk(T('rules', 'common'))) add(`.claude/rules/common/${rel}`, `rules/common/${rel}`, 'rule');
   if (pack === 'web-ts') for (const rel of walk(T('rules', 'web-ts'))) add(`.claude/rules/web-ts/${rel}`, `rules/web-ts/${rel}`, 'rule');
   add('.github/workflows/ci.yml', `github/ci-${pack}.yml`, 'ci');

@@ -11,7 +11,8 @@ const { input, dir } = ctx;
 
 if (input.tool_name === 'Read') {
   const rel = relPath(dir, input.tool_input?.file_path ?? '');
-  const outside = rel.startsWith('..') || rel === '';
+  // On Windows a file on another drive has no relative path: path.relative returns an absolute one.
+  const outside = rel.startsWith('..') || rel === '' || /^[A-Za-z]:|^\//.test(rel);
   if (!outside && !matchesAny(rel, UNTRUSTED_PATHS)) process.exit(0);
 }
 

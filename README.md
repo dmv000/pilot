@@ -40,8 +40,10 @@ Auto-update is off by default, so you choose when the kit's code changes. Read t
 | `/pilot:bug`, `/pilot:problem` | Files a GitHub Issue (you approve each one) and updates the local mirror |
 | `/pilot:sync` | Rebuilds the local mirrors of GitHub Issues |
 | `/pilot:handoff` | Writes the state for the next session |
-| `/pilot:design` | Creates the design system (tokens, rules, preview page) |
+| `/pilot:design` | Creates the design system from the kit's templates: rules in DESIGN.md, values in tokens.json (contrast-checked), a generated preview page |
+| `/pilot:migrate` | After a kit update, upgrades the project's pilot files: automatic for files you never edited, your approval for the rest, with backups |
 | `/pilot:doctor` | Checks the install and the project, and switches the model profile (`/pilot:doctor profile max`) |
+| `/pilot:audit` | For maintainers of this repo: re-checks every kit part against evidence after a new model or Claude Code release |
 
 ## What pilot enforces
 

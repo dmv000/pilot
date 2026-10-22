@@ -1,5 +1,7 @@
 // H05 Stop: a turn that changed code may not end while the fast checks fail (F01, F02).
 // The hook runs the checks itself instead of trusting a claim that they passed.
+import fs from 'node:fs';
+import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import crypto from 'node:crypto';
 import { start, emit } from '../lib/project.js';
@@ -26,6 +28,13 @@ if (diff.status === 0) {
   for (const line of diff.stdout.split('\n')) {
     if (line.startsWith('+++ ')) file = line.replace(/^\+\+\+ (b\/)?/, '');
     else if (line.startsWith('+') && TODO_WITHOUT_ISSUE.test(line)) todos.push(`${file}: ${line.slice(1).trim()}`);
+  }
+  // New files are not in `git diff`; scan untracked (not ignored) source files too.
+  const untracked = spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: dir, encoding: 'utf8' });
+  for (const file of (untracked.stdout ?? '').split('\n').filter(f => f && !/\.(md|json|lock)$/i.test(f)).slice(0, 500)) {
+    let text = '';
+    try { const st = fs.statSync(path.join(dir, file)); if (st.size > 1_000_000) continue; text = fs.readFileSync(path.join(dir, file), 'utf8'); } catch { continue; }
+    for (const line of text.split('\n')) if (TODO_WITHOUT_ISSUE.test(line)) todos.push(`${file}: ${line.trim()}`);
   }
 }
 

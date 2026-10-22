@@ -8,7 +8,9 @@
       "Bash(npm run lint *)",
       "Bash(npm run typecheck)",
       "Bash(npx vitest run *)",
-      "Bash(npx tsc --noEmit *)"
+      "Bash(npx tsc --noEmit *)",
+      "Bash(npm run coverage)",
+      "Bash(npm run mutation)"
     ]
   }
 }

@@ -19,8 +19,8 @@ Status: Draft
 - Tests are written before the code for logic (not for pure layout).
 - Acceptance tests are written by the test-writer agent from the spec and are not edited by the implementer.
 - Every test that verifies a requirement carries its ID: a comment `@req FR-012` or the ID in the test name.
-- Coverage on changed lines must be at least 80% (CI: diff-cover).
-- Mutation testing runs weekly and on demand; baseline score: {{baseline}}.
+- Coverage on changed lines must be at least 80%. CI runs the project's `coverage` script, which must write Cobertura XML to `coverage/cobertura-coverage.xml`, then diff-cover.
+- Mutation testing runs weekly and on demand through the project's `mutation` script; baseline score: {{baseline}}.
 - A skipped test needs `pilot-allow-skip: #<issue>` next to it.
 
 ## Property-based tests

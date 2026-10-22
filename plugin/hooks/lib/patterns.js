@@ -54,7 +54,11 @@ export const NO_VERIFY = /\bgit\b[^;&|\n]*\s--no-verify\b/;
 export const FORCE_PUSH_MAIN = /\bgit\s+push\b(?=[^;&|\n]*\s(?:-f|--force(?!-with-lease)|--force-with-lease)\b)(?=[^;&|\n]*\b(?:main|master)\b)/;
 
 // Commands that do not change files: they leave the session clean (H04).
-export const READ_ONLY_COMMANDS = /^\s*(?:git\s+(?:status|diff|log|show|branch|rev-parse|ls-files|blame|remote\s+-v)|ls|dir|pwd|cat|type|head|tail|less|grep|rg|find|wc|echo|which|where|node\s+--version|npm\s+(?:ls|view|--version)|gh\s+(?:issue|pr)\s+(?:list|view)|Get-ChildItem|Get-Content|Select-String)\b(?![^\n]*(?:>|\|\s*tee\b))/i;
+// Test, lint and type-check runs count as read-only unless they are asked to fix or update files.
+export const READ_ONLY_COMMANDS = /^\s*(?:git\s+(?:status|diff|log|show|branch|rev-parse|ls-files|blame|remote\s+-v)|ls|dir|pwd|cat|type|head|tail|less|grep|rg|find|wc|echo|which|where|node\s+--version|node\s+--test|npm\s+(?:ls|view|--version|test|t|run\s+(?:test|check|lint|typecheck|test:[\w:-]+|check:[\w:-]+))|npx\s+(?:vitest\s+run|jest|tsc\s+--noEmit|eslint|oxlint)|pytest|python3?\s+-m\s+(?:pytest|unittest)|python3?\s+scripts\/run_tests\.py|gh\s+(?:issue|pr)\s+(?:list|view)|Get-ChildItem|Get-Content|Select-String)\b(?![^\n]*(?:>|\|\s*tee\b|--fix\b|\s-u\b|--update(?:Snapshot)?\b|--write\b))/i;
+
+// Edits to these files cannot break the code checks, so they leave the session clean.
+export const NON_CODE_FILES = ['**/*.md', '.pilot/**', 'docs/**/*.json', 'docs/**/*.jsonl', 'docs/**/*.html'];
 
 // Text that tries to instruct the agent (F14).
 export const INJECTION_PATTERNS = [
