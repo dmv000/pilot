@@ -5,7 +5,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
-const EVALS = path.join(ROOT, 'evals');
+// Plugin evals must live inside the plugin folder: claude plugin eval only reads <plugin>/evals (no '..').
+const EVALS = path.join(ROOT, 'plugin', 'evals');
 
 const MANIFEST = fast => JSON.stringify({
   schemaVersion: 1, kitVersion: '0.1.0', templateVersion: 'v1', profile: 'pro', projectType: 'web-app',
@@ -174,4 +175,4 @@ Pass rule (fixed in P3): the with-plugin score is at least 0.8, and the differen
 
 E-03, E-04a-c and E-08 need project settings (output style, rules), which plugin eval does not load. They run through bench/probes.mjs instead.
 `);
-console.log(`wrote ${Object.keys(cases).length} cases to evals/`);
+console.log(`wrote ${Object.keys(cases).length} cases to plugin/evals/`);

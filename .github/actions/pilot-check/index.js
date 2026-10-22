@@ -1,7 +1,7 @@
 // pilot-check GitHub Action: runs the same checks as `pilot.js check`, from the pinned kit commit.
 // Needs no secrets. Projects pin it by full commit SHA.
 import path from 'node:path';
-import { runAll } from '../../../scripts/lib/trace.js';
+import { runAll } from '../../../plugin/scripts/lib/trace.js';
 
 const input = name => process.env[`INPUT_${name.toUpperCase()}`] ?? '';
 const workspace = process.env.GITHUB_WORKSPACE ?? process.cwd();

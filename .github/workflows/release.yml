@@ -19,5 +19,5 @@ jobs:
       - name: Require a recent local eval run (release rule from P3)
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          test -f evals/history.jsonl || { echo "No evals/history.jsonl: run npm run eval in WSL2 before releasing."; exit 1; }
-          tail -n 1 evals/history.jsonl
+          test -f plugin/evals/history.jsonl || { echo "No plugin/evals/history.jsonl: run npm run eval in WSL2 before releasing."; exit 1; }
+          tail -n 1 plugin/evals/history.jsonl

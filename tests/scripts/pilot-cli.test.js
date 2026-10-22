@@ -5,12 +5,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { runPilot, write, read, ROOT } from '../helpers.js';
-import { validate } from '../../scripts/lib/schema.js';
-import { mergeSettings } from '../../scripts/lib/scaffold.js';
+import { runPilot, write, read, PLUGIN } from '../helpers.js';
+import { validate } from '../../plugin/scripts/lib/schema.js';
+import { mergeSettings } from '../../plugin/scripts/lib/scaffold.js';
 
 const tmp = () => fs.mkdtempSync(path.join(os.tmpdir(), 'pilot-cli-'));
-const schema = n => JSON.parse(fs.readFileSync(path.join(ROOT, 'templates/schemas', `${n}.schema.json`), 'utf8'));
+const schema = n => JSON.parse(fs.readFileSync(path.join(PLUGIN, 'templates/schemas', `${n}.schema.json`), 'utf8'));
 const answersFile = (dir, extra = {}) => {
   const f = path.join(dir, '..', path.basename(dir) + '-answers.json');
   fs.writeFileSync(f, JSON.stringify({ project_name: 'Demo', projectType: 'web-app', stack: 'web-ts', profile: 'pro', hasAI: false, design: 'pending', ...extra }));
@@ -211,7 +211,7 @@ test('T-schema: each schema accepts its example and rejects broken ones', () => 
 });
 
 test('T-settings: every profile and pack merges into valid settings with the secret deny list', () => {
-  const s = n => JSON.parse(fs.readFileSync(path.join(ROOT, 'templates/settings', n), 'utf8'));
+  const s = n => JSON.parse(fs.readFileSync(path.join(PLUGIN, 'templates/settings', n), 'utf8'));
   for (const profile of ['pro', 'max']) for (const pack of ['web-ts', 'generic']) {
     const merged = mergeSettings(s('base.json'), s(`profile-${profile}.json`), s(`pack-${pack}.json`));
     assert.equal(merged.outputStyle, 'pilot:direct');

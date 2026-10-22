@@ -6,7 +6,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { BENCH, KIT } from './lib/build.mjs';
+import { BENCH, PLUGIN } from './lib/build.mjs';
 
 const argv = process.argv.slice(2);
 const opt = (n, d) => { const i = argv.indexOf(`--${n}`); return i < 0 ? d : argv[i + 1]; };
@@ -28,7 +28,7 @@ function claude(args, cwd) {
 }
 const ask = (prompt, cwd, { plugin = false, resume, model } = {}) => claude([
   '-p', prompt, '--output-format', 'json', '--max-turns', '40', '--setting-sources', 'project,local',
-  '--settings', path.join(BENCH, 'settings.json'), ...(plugin ? ['--plugin-dir', KIT] : []), ...(resume ? ['--resume', resume] : []), ...(model ? ['--model', model] : [])
+  '--settings', path.join(BENCH, 'settings.json'), ...(plugin ? ['--plugin-dir', PLUGIN] : []), ...(resume ? ['--resume', resume] : []), ...(model ? ['--model', model] : [])
 ], cwd);
 
 function judge(rubric, answer) {
@@ -43,7 +43,7 @@ function project(arm, files = {}) {
   if (arm === 'pilot') {
     const answers = path.join(os.tmpdir(), `answers-${path.basename(dir)}.json`);
     fs.writeFileSync(answers, JSON.stringify({ project_name: 'Probe', projectType: 'script', stack: 'generic', profile: 'pro', hasAI: false, design: 'not-applicable', checks: { fast: 'node --test', full: 'node --test', acceptance: 'node --test tests/acceptance/' } }));
-    spawnSync(process.execPath, [path.join(KIT, 'scripts', 'pilot.js'), 'scaffold', '--project', dir, '--answers', answers]);
+    spawnSync(process.execPath, [path.join(PLUGIN, 'scripts', 'pilot.js'), 'scaffold', '--project', dir, '--answers', answers]);
   }
   spawnSync('git', ['init', '-q'], { cwd: dir });
   spawnSync('git', ['-c', 'user.email=p@p', '-c', 'user.name=p', 'add', '-A'], { cwd: dir });

@@ -7,6 +7,7 @@ import { fileURLToPath } from 'node:url';
 
 export const BENCH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const KIT = path.resolve(BENCH, '..');
+export const PLUGIN = path.join(KIT, 'plugin');
 const TASKS = path.join(BENCH, 'tasks');
 
 export const loadTask = id => JSON.parse(fs.readFileSync(path.join(TASKS, id, 'task.json'), 'utf8'));
@@ -78,10 +79,10 @@ export function buildWorkspace(taskId, arm, dir, { install = true } = {}) {
       project_name: t.title, projectType: t.projectType, stack: t.stack, profile: 'pro', hasAI: t.hasAI,
       design: 'not-applicable', checks: t.checks, stack_summary: t.stack === 'web-ts' ? 'Node.js 24, TypeScript (type stripping), node:test' : 'Python 3.11+, standard library, unittest'
     }));
-    run(process.execPath, [path.join(KIT, 'scripts', 'pilot.js'), 'scaffold', '--project', dir, '--answers', answers], dir);
+    run(process.execPath, [path.join(PLUGIN, 'scripts', 'pilot.js'), 'scaffold', '--project', dir, '--answers', answers], dir);
     for (const [rel, text] of Object.entries(renderPilotDocs(t))) write(dir, rel, text);
-    run(process.execPath, [path.join(KIT, 'scripts', 'pilot.js'), 'record', '--project', dir], dir);
-    run(process.execPath, [path.join(KIT, 'scripts', 'pilot.js'), 'trace', '--project', dir, '--write'], dir);
+    run(process.execPath, [path.join(PLUGIN, 'scripts', 'pilot.js'), 'record', '--project', dir], dir);
+    run(process.execPath, [path.join(PLUGIN, 'scripts', 'pilot.js'), 'trace', '--project', dir, '--write'], dir);
     fs.rmSync(answers, { force: true });
   } else throw new Error(`unknown arm ${arm}`);
 

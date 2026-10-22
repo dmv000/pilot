@@ -167,6 +167,16 @@ node bench/run.mjs --all && node bench/report.mjs
 | Workflow `agent()` accepts a `model` option | First `/pilot:research-stack` and `/pilot:verify-change` runs |
 | Each benchmark task finishes in under 60 minutes | Calibration |
 
+## 7b. Repository layout change (after the build)
+
+The installable plugin moved into `plugin/`. The marketplace entry now points at `./plugin`, so an install no longer downloads the tests, benchmark, reference solutions or design documents.
+
+One exception is deliberate: `plugin/evals/` ships with the plugin. `claude plugin eval` only reads eval cases inside the plugin folder; paths with `..` are rejected. The cases are about 40 small text files.
+
+The benchmark's pilot arm now loads `plugin/` directly, so the separate stripped copy is gone. `npm run check:registry` fails if anything other than runtime files appears in `plugin/`.
+
+Paths in P2 and P3 refer to the layout before this change. Read `skills/…` there as `plugin/skills/…`, and likewise for `agents/`, `hooks/`, `workflows/`, `output-styles/`, `templates/`, `scripts/pilot.js` and `scripts/lib/`.
+
 ## 8. Known limits of v1
 
 - **Review verdicts.** The orchestrating session writes the reviewer's verdict to a file before `pilot.js review` records it. The acceptance exit code is real evidence. The verdict is only as honest as the orchestrator's copy of the reviewer's output. The benchmark's blind reviewer measures whether this matters.

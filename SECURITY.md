@@ -5,7 +5,7 @@ pilot's hooks run on your machine with your user permissions every time Claude C
 ## Before you update
 
 1. Read the CHANGELOG entry for the new version.
-2. Look at what changed in code that runs: `git diff pilot--v<old>..pilot--v<new> -- hooks/ scripts/ workflows/ .github/actions/`.
+2. Look at what changed in code that runs: `git diff pilot--v<old>..pilot--v<new> -- plugin/hooks/ plugin/scripts/ plugin/workflows/ .github/actions/`.
 3. Then run `claude plugin update pilot@pilot`.
 
 Auto-update is off by default for this marketplace. Keep it off unless you trust every future release.

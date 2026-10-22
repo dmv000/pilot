@@ -49,7 +49,7 @@ jobs:
           fi
       - name: Validate (C-validate)
         shell: bash
-        run: claude plugin validate --strict . && claude plugin validate --strict .claude-plugin/plugin.json
+        run: claude plugin validate --strict . && claude plugin validate --strict plugin/.claude-plugin/plugin.json
       - name: Install from local marketplace (C-install)
         shell: bash
         run: |

@@ -56,6 +56,7 @@ These are enforced by hooks, permissions or CI, not just written as advice:
 
 ## How it is built
 
+- The installed plugin is the `plugin/` folder only: skills, agents, hooks, workflows, output style, templates, the `pilot.js` helper and the plugin's eval cases. Tests, the benchmark and design documents stay in this repository and are not installed.
 - Design documents: [docs/design/](docs/design/), covering evidence, spec, templates and the verification plan.
 - Every component, the failure it prevents and the check that proves it: [REGISTRY.md](REGISTRY.md).
 
@@ -65,7 +66,7 @@ These are enforced by hooks, permissions or CI, not just written as advice:
 npm test                 # hook and CLI tests (no dependencies)
 npm run check:registry   # registry matches the files
 npm run check:release    # everything above + context budget + claude plugin validate (needs a logged-in Claude Code)
-npm run eval             # behavior evals with and without the plugin (WSL2/Linux; uses your plan)
+npm run eval             # behavior evals in plugin/evals, with and without the plugin (WSL2/Linux; uses your plan)
 ```
 
 ## License

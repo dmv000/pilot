@@ -11,7 +11,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { BENCH, KIT, loadTask, buildWorkspace, prompts, renderSpec } from './lib/build.mjs';
+import { BENCH, PLUGIN, loadTask, buildWorkspace, prompts, renderSpec } from './lib/build.mjs';
 import { verify as verifyHidden } from './lib/hashes.mjs';
 
 const TASK_IDS = ['B-1', 'B-2', 'B-3', 'B-4', 'B-5'];
@@ -43,18 +43,9 @@ function claude(args, cwd, extraEnv = {}, timeout = RUN_TIMEOUT_MS) {
   return { json, stdout: r.stdout, stderr: r.stderr, status: r.status, timedOut: r.error?.code === 'ETIMEDOUT', ms: Date.now() - started };
 }
 
-// The pilot arm loads a copy of the plugin without bench/, docs/ or tests/, so the agent cannot find
-// hidden tests or reference solutions through the plugin path its skills mention.
-let distDir = null;
-function pluginDist() {
-  if (distDir) return distDir;
-  distDir = path.join(WORK, 'plugin-dist');
-  fs.rmSync(distDir, { recursive: true, force: true });
-  for (const p of ['.claude-plugin', 'skills', 'agents', 'hooks', 'output-styles', 'workflows', 'scripts', 'templates', 'package.json', 'LICENSE']) {
-    fs.cpSync(path.join(KIT, p), path.join(distDir, p), { recursive: true });
-  }
-  return distDir;
-}
+// The pilot arm loads plugin/ only. It holds no benchmark tasks, hidden tests or reference solutions,
+// so the plugin path its skills mention leads nowhere useful for cheating. The sandbox also denies bench/tasks.
+const pluginDist = () => PLUGIN;
 
 // Shared settings plus a sandbox read-deny on the benchmark's task folder (hidden tests, references).
 let settingsFile = null;

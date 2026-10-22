@@ -1,0 +1,6 @@
+{
+  "name": "pilot-plugin",
+  "private": true,
+  "type": "module",
+  "description": "Runtime of the pilot Claude Code plugin. No dependencies: hooks and scripts use Node.js built-ins only."
+}

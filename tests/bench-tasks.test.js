@@ -33,7 +33,7 @@ for (const id of ['B-1', 'B-2', 'B-3', 'B-4', 'B-5']) {
       buildWorkspace(id, arm, dir, { install: false });
       assert.ok(fs.existsSync(path.join(dir, arm === 'vanilla' ? 'SPEC.md' : 'docs/requirements/SRS.md')));
       if (arm === 'pilot') {
-        const check = spawnSync(process.execPath, [path.join(BENCH, '..', 'scripts', 'pilot.js'), 'check', '--project', dir], { encoding: 'utf8' });
+        const check = spawnSync(process.execPath, [path.join(BENCH, '..', 'plugin', 'scripts', 'pilot.js'), 'check', '--project', dir], { encoding: 'utf8' });
         assert.equal(check.status, 0, check.stdout);
       }
       const start = runHidden(task, dir);

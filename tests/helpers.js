@@ -7,8 +7,9 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 export const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-export const HOOK = name => path.join(ROOT, 'hooks', 'scripts', name);
-export const PILOT = path.join(ROOT, 'scripts', 'pilot.js');
+export const PLUGIN = path.join(ROOT, 'plugin');
+export const HOOK = name => path.join(PLUGIN, 'hooks', 'scripts', name);
+export const PILOT = path.join(PLUGIN, 'scripts', 'pilot.js');
 
 export function tmpProject({ manifest = {}, files = {} } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pilot-test-'));

@@ -1,7 +1,7 @@
 # Migrations
 
 Purpose: how project files move from one pilot template version to the next.
-Read this when: you change a template in templates/docs/, templates/settings/, templates/rules/ or templates/github/.
+Read this when: you change a template in plugin/templates/ (docs, settings, rules or github).
 Related files: docs/design/P2-spec.md (section 11), .pilot/manifest.json in each project.
 
 v1 has nothing to migrate from. The first template change ships `v1-to-v2.js` and the `/pilot:migrate` skill together.
