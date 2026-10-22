@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { start, relPath, matchesAny, readText, decide, isImplementer } from '../lib/project.js';
 import {
-  DEFAULT_PROTECTED, PROTECTED_EXCEPTIONS, DEFAULT_ACCEPTANCE,
+  DEFAULT_PROTECTED, PROTECTED_EXCEPTIONS, DEFAULT_ACCEPTANCE, GATE_CONFIG,
   SKIP_PATTERNS, SKIP_ALLOW, TEST_CONFIG, TEST_EXCLUSION
 } from '../lib/patterns.js';
 
@@ -29,6 +29,16 @@ else { before = ''; after = ti.new_source ?? ''; }
 const protectedGlobs = [...DEFAULT_PROTECTED, ...(manifest.protectedPaths ?? [])];
 if (matchesAny(rel, protectedGlobs) && !matchesAny(rel, PROTECTED_EXCEPTIONS)) {
   decide('deny', `pilot: ${rel} is a protected file (manifest.protectedPaths or secrets). Ask the user to change it themselves, or explain why it must change.`);
+  process.exit(0);
+}
+
+// 1b. Files that configure the gates.
+if (matchesAny(rel, GATE_CONFIG)) {
+  if (!isMain) {
+    decide('deny', `pilot: subagents may not change ${rel}; it configures pilot's quality gates. Report what should change in your result.`);
+    process.exit(0);
+  }
+  decide('ask', `pilot: ${rel} configures pilot's quality gates (checks, permissions, model). Approve only if you asked for this change.`);
   process.exit(0);
 }
 

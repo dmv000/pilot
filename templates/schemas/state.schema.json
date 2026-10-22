@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pilot/state.schema.json",
+  "title": "pilot local session state",
+  "type": "object",
+  "properties": {
+    "dirty": { "type": "boolean" },
+    "lastEditAt": { "type": ["string", "null"] },
+    "lastGreen": { "type": ["object", "null"] },
+    "stopFailures": { "type": ["object", "null"] }
+  }
+}

@@ -1,0 +1,29 @@
+name: Bug
+description: Something does not behave as the spec says.
+labels: [bug]
+body:
+  - type: textarea
+    id: summary
+    attributes: { label: Summary, description: "One or two sentences, written by a human." }
+    validations: { required: true }
+  - type: textarea
+    id: steps
+    attributes: { label: Steps to reproduce }
+    validations: { required: true }
+  - type: textarea
+    id: expected
+    attributes: { label: Expected }
+    validations: { required: true }
+  - type: textarea
+    id: actual
+    attributes: { label: Actual }
+    validations: { required: true }
+  - type: input
+    id: ids
+    attributes: { label: Linked requirement IDs, placeholder: "FR-012, US-003" }
+  - type: textarea
+    id: root_cause
+    attributes: { label: Root cause (fill when fixed) }
+  - type: input
+    id: regression_test
+    attributes: { label: Regression test (fill when fixed), placeholder: "tests/unit/date.test.ts > handles DST" }

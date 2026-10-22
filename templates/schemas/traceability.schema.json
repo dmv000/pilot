@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pilot/traceability.schema.json",
+  "title": "pilot traceability (generated)",
+  "type": "object",
+  "required": ["generated", "stories", "requirements"],
+  "properties": {
+    "generated": { "type": "string" },
+    "stories": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["requirements"],
+        "properties": { "requirements": { "type": "array", "items": { "type": "string" } } },
+        "additionalProperties": false
+      }
+    },
+    "requirements": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["tests", "status"],
+        "properties": {
+          "stories": { "type": "array", "items": { "type": "string" } },
+          "tests": { "type": "array", "items": { "type": "string" } },
+          "status": { "enum": ["covered", "uncovered"] }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

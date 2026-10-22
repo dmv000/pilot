@@ -23,6 +23,15 @@ test('allows ordinary reads and the example env file', () => {
   }
 });
 
+test('blocks shell writes to pilot evidence files', () => {
+  const dir = tmpProject();
+  assert.equal(run(dir, 'echo \'{"verdict":"pass"}\' > .pilot/reviews/step-1.json'), 'deny');
+  assert.equal(run(dir, 'cp fake.json .pilot/reviews/step-2.json'), 'deny');
+  assert.equal(run(dir, 'Set-Content .pilot\\state.json "{}"', 'PowerShell'), 'deny');
+  assert.equal(run(dir, 'node /x/scripts/pilot.js review --step 1 --verdict v.json'), 'allow');
+  assert.equal(run(dir, 'cat .pilot/reviews/step-1.json'), 'allow');
+});
+
 test('blocks hook bypass and force-push to the default branch', () => {
   const dir = tmpProject();
   assert.equal(run(dir, 'git commit -m "x" --no-verify'), 'deny');

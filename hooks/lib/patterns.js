@@ -4,8 +4,17 @@
 export const DEFAULT_PROTECTED = [
   '.env', '.env.*', '**/.env', '**/.env.*',
   '.git/**',
-  '**/*.pem', '**/id_rsa*', '**/id_ed25519*'
+  '**/*.pem', '**/id_rsa*', '**/id_ed25519*',
+  // Evidence files: only scripts/pilot.js and the hooks write these (F01, F20).
+  '.pilot/reviews/**', '.pilot/state.json'
 ];
+
+// Files that switch the gates themselves. The main session needs the owner's approval;
+// subagents may not change them at all.
+export const GATE_CONFIG = ['.pilot/manifest.json', '.claude/settings.json', '.claude/settings.local.json'];
+
+// Shell writes into pilot's evidence and config files.
+export const SHELL_WRITES_PILOT = /(?:>{1,2}|\btee\b|\bcp\b|\bmv\b|\bcopy\b|\bmove\b|Set-Content|Add-Content|Out-File|\bsed\s+-i)[^;&|\n]*\.pilot[\\/](?:reviews|state\.json|manifest\.json)/i;
 export const PROTECTED_EXCEPTIONS = ['.env.example', '**/.env.example', '.env.sample', '**/.env.sample'];
 
 export const DEFAULT_ACCEPTANCE = ['tests/acceptance/**'];

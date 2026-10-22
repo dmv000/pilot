@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pilot/manifest.schema.json",
+  "title": "pilot project manifest",
+  "type": "object",
+  "required": ["schemaVersion", "kitVersion", "templateVersion", "profile", "projectType", "stack", "hasAI", "design", "checks", "files"],
+  "properties": {
+    "$schema": { "type": "string" },
+    "schemaVersion": { "type": "integer", "minimum": 1 },
+    "kitVersion": { "type": "string", "pattern": "^[0-9]+[.][0-9]+[.][0-9]+" },
+    "templateVersion": { "type": "string", "pattern": "^v[0-9]+$" },
+    "profile": { "enum": ["pro", "max"] },
+    "projectType": { "enum": ["web-app", "mobile-app", "script", "os", "ai-system", "other"] },
+    "stack": { "type": "string" },
+    "hasAI": { "type": "boolean" },
+    "design": { "enum": ["pending", "done", "not-applicable"] },
+    "checks": {
+      "type": "object",
+      "properties": {
+        "fast": { "type": "string" },
+        "full": { "type": "string" },
+        "acceptance": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "protectedPaths": { "type": "array", "items": { "type": "string" } },
+    "acceptancePaths": { "type": "array", "items": { "type": "string" } },
+    "files": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["template", "sha256"],
+        "properties": {
+          "template": { "type": "string" },
+          "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "writtenAt": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

@@ -19,6 +19,15 @@ test('blocks .env, lockfile from manifest, and .git edits; allows .env.example',
   assert.equal(decision(writeFile(dir, 'src/app.ts', 'export {}')), 'allow');
 });
 
+test('review and state files are protected; gate config asks main, denies subagents', () => {
+  const dir = tmpProject();
+  assert.equal(decision(writeFile(dir, '.pilot/reviews/step-1.json', '{"verdict":"pass"}')), 'deny');
+  assert.equal(decision(writeFile(dir, '.pilot/state.json', '{"dirty":false}')), 'deny');
+  assert.equal(decision(edit(dir, '.pilot/manifest.json', 'npm run check:fast', 'true')), 'ask');
+  assert.equal(decision(edit(dir, '.pilot/manifest.json', 'npm run check:fast', 'true', { agent_type: 'pilot:implementer' })), 'deny');
+  assert.equal(decision(writeFile(dir, '.claude/settings.json', '{}')), 'ask');
+});
+
 test('handles Windows backslash paths', () => {
   const dir = tmpProject();
   const winPath = abs(dir, '.env').replace(/\//g, '\\');

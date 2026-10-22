@@ -1,0 +1,17 @@
+name: Problem / blocker
+description: Work is blocked and needs a decision or outside help.
+labels: [problem]
+body:
+  - type: textarea
+    id: blocked
+    attributes: { label: What is blocked }
+    validations: { required: true }
+  - type: textarea
+    id: tried
+    attributes: { label: What was tried }
+  - type: textarea
+    id: options
+    attributes: { label: Options }
+  - type: input
+    id: decision_from
+    attributes: { label: Decision needed from }

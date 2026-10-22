@@ -1,6 +1,6 @@
 // H03 PreToolUse Bash|PowerShell (F02, F06). Fails closed via onFailure "block".
 import { start, decide } from '../lib/project.js';
-import { SECRET_READ, SECRET_REDIRECT, ENV_DUMP, NO_VERIFY, FORCE_PUSH_MAIN } from '../lib/patterns.js';
+import { SECRET_READ, SECRET_REDIRECT, ENV_DUMP, NO_VERIFY, FORCE_PUSH_MAIN, SHELL_WRITES_PILOT } from '../lib/patterns.js';
 
 const ctx = start();
 if (!ctx) process.exit(0);
@@ -11,7 +11,8 @@ const rules = [
   [SECRET_REDIRECT, 'this command feeds a secret file into a program. Load secrets through the app\'s own config loader instead.'],
   [ENV_DUMP, 'dumping all environment variables can print secrets into the transcript. Print only the variable you need, by name.'],
   [NO_VERIFY, '--no-verify skips the project\'s git hooks and quality gates. Fix what the hook reports instead.'],
-  [FORCE_PUSH_MAIN, 'force-pushing the default branch rewrites shared history. Push to a branch and open a pull request.']
+  [FORCE_PUSH_MAIN, 'force-pushing the default branch rewrites shared history. Push to a branch and open a pull request.'],
+  [SHELL_WRITES_PILOT, 'pilot\'s review, state and manifest files are written only by scripts/pilot.js and the hooks. Use /pilot:step (pilot.js review) or /pilot:doctor.']
 ];
 
 for (const [re, why] of rules) {

@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "pilot/review.schema.json",
+  "title": "pilot step review verdict",
+  "type": "object",
+  "required": ["step", "acceptance", "verdict", "findings"],
+  "properties": {
+    "step": { "type": "integer", "minimum": 1 },
+    "requirements": { "type": "array", "items": { "type": "string", "pattern": "^(FR|NFR)-[0-9]{3,}$" } },
+    "acceptance": {
+      "type": "object",
+      "required": ["command", "exitCode"],
+      "properties": { "command": { "type": "string" }, "exitCode": { "type": "integer" }, "at": { "type": "string" } },
+      "additionalProperties": false
+    },
+    "verdict": { "enum": ["pass", "fail"] },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["severity", "summary"],
+        "properties": {
+          "severity": { "enum": ["major", "minor"] },
+          "summary": { "type": "string" },
+          "file": { "type": "string" },
+          "requirement": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
