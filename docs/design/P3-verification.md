@@ -8,6 +8,15 @@ Status: **Draft, waiting for owner review at the P3 gate.** Written 2026-10-22. 
 
 ---
 
+## Answers recorded 2026-10-22
+
+| Question | Decision |
+| --- | --- |
+| 1. Benchmark duration | Keep the 5 tasks. Run the 2-run calibration first, report real time and usage, and the owner decides whether to run the remaining 28 |
+| 2. Login token | Approved. Owner runs `claude setup-token` in WSL2; the token is stored in `~/.config/pilot-bench/token` with mode 600 |
+| 3. First-time user test | Owner has a real person for H-cold |
+| 4. GitHub owner | Still open; needed before publishing |
+
 ## Questions for the owner (answer before P4)
 
 1. **The benchmark will take several days.** It is 30 long automated coding runs, and your Pro plan's usage limits reset every few hours. The runner pauses when you hit a limit and continues later on its own. While it runs, your own Claude use shares the same limit. Is that acceptable?
