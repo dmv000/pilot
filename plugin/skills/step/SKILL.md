@@ -19,7 +19,7 @@ Read `profile` from `.pilot/manifest.json`. Pass `model` on every Agent call:
 | --- | --- | --- |
 | pilot:explorer, pilot:doc-keeper | haiku | haiku |
 | pilot:researcher, pilot:test-writer, pilot:implementer | sonnet | sonnet |
-| pilot:architect, pilot:code-reviewer, pilot:security-reviewer | opus | opus |
+| pilot:architect, pilot:code-reviewer, pilot:security-reviewer, pilot:design-reviewer | opus | opus |
 
 Never use fable unless the owner approves it after two failed rounds. It bills usage credits.
 
@@ -44,8 +44,11 @@ Dispatch `pilot:implementer` once per story (template B), sequentially. It may n
 ## 4. Verify and review
 
 1. Get the diff range: `git diff <step start>..HEAD`, or the working tree.
-2. Run the `verify-change` workflow with the Workflow tool (args: `{ step, frIds, diffBase, risky }`). Set `risky` true when the diff touches auth, input handling, secrets, payments or dependencies.
-   - If workflows are unavailable: dispatch `pilot:code-reviewer` (template C), plus `pilot:security-reviewer` when risky. Combine their findings yourself, keeping only findings that affect correctness or a stated requirement.
+2. Run the `verify-change` workflow with the Workflow tool (args: `{ step, frIds, diffBase, risky, ui, pluginRoot: "${CLAUDE_PLUGIN_ROOT}" }`).
+   - Set `risky` true when the diff touches auth, input handling, secrets, payments or dependencies.
+   - Set `ui` true when the diff touches user-facing UI files (.tsx, .jsx, .vue, .svelte, .css, .html) and `docs/design/DESIGN.md` exists.
+   - If workflows are unavailable: dispatch `pilot:code-reviewer` (template C), plus `pilot:security-reviewer` when risky, plus `pilot:design-reviewer` (template E) when ui. Combine their findings yourself, keeping only findings that affect correctness, accessibility, the design rules or a stated requirement.
+   - If the diff touches UI but the design is still pending: say so in the report, and apply the accessibility defaults (WCAG 2.2 AA) in the review.
 3. Save the verdict as `.pilot/tmp/verdict-step-N.json`, using `{ "verdict": "pass|fail", "requirements": ["FR-…"], "findings": [{ "severity": "major|minor", "summary": "…", "file": "…", "requirement": "FR-…" }] }`. Copy the reviewers' result faithfully; never upgrade a fail to a pass.
 4. Record it. This runs the acceptance tests itself and writes `.pilot/reviews/step-N.json`:
 

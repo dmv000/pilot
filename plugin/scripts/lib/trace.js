@@ -3,6 +3,7 @@
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { read, walk, exists } from './fsutil.js';
+import { checkDesign } from './design.js';
 
 const OWNER = { US: 'docs/requirements/PRD.md', FR: 'docs/requirements/SRS.md', NFR: 'docs/requirements/SRS.md', A: 'docs/planning/ASSUMPTIONS.md', T: 'docs/quality/SECURITY.md' };
 const DEF_RE = /^#{2,4}\s+(US|FR|NFR|A|T)-(\d{3,})\b/gm;
@@ -183,5 +184,5 @@ export function checkTodos(dir, base) {
 
 export function runAll(dir, { base } = {}) {
   const c = collect(dir);
-  return [checkIds(c), checkCoverage(c), checkRestatement(c), checkHeaders(c), checkSizes(dir), checkPlaceholders(c), checkTraceFile(dir, c), checkTodos(dir, base)];
+  return [checkIds(c), checkCoverage(c), checkRestatement(c), checkHeaders(c), checkSizes(dir), checkPlaceholders(c), checkTraceFile(dir, c), checkTodos(dir, base), checkDesign(dir)];
 }

@@ -10,6 +10,7 @@ import { plan, apply, record } from './lib/scaffold.js';
 import { collect, buildTraceability, runAll } from './lib/trace.js';
 import { buildMirrors, prunePending } from './lib/sync.js';
 import { renderPreview } from './lib/preview.js';
+import { checkDesign } from './lib/design.js';
 
 const [cmd, ...rest] = process.argv.slice(2);
 const opts = { _: [] };
@@ -110,6 +111,35 @@ const commands = {
     out('wrote docs/design/preview.html');
   },
 
+  // Start the design system from the kit templates. Never overwrites existing files.
+  'design-init'() {
+    const name = opts.name ?? (read(path.join(project, 'CLAUDE.md'))?.match(/^#\s+(.+)$/m)?.[1] ?? 'Project').trim();
+    const created = [];
+    for (const file of ['DESIGN.md', 'tokens.json']) {
+      const target = path.join(project, 'docs', 'design', file);
+      if (exists(target)) continue;
+      writeFile(target, read(path.join(KIT_ROOT, 'templates', 'design', file)).replace(/\{\{project_name\}\}/g, name));
+      created.push(`docs/design/${file}`);
+    }
+    if (created.length && exists(path.join(project, '.pilot/manifest.json'))) {
+      const manifest = loadJson(path.join(project, '.pilot/manifest.json'));
+      for (const rel of created) manifest.files[rel] = { template: `design/${path.basename(rel)}`, sha256: '0'.repeat(64), writtenAt: today() };
+      writeFile(path.join(project, '.pilot/manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
+      record(project, created);
+    }
+    out({ created, skipped: ['docs/design/DESIGN.md', 'docs/design/tokens.json'].filter(f => !created.includes(f)) });
+  },
+
+  // Token structure, WCAG contrast of the declared pairs, DESIGN.md sections, hard-coded colors.
+  'design-check'() {
+    const r = checkDesign(project);
+    for (const e of r.errors) out(`ERROR [design] ${e}`);
+    for (const w of r.warnings) out(`warn  [design] ${w}`);
+    if (!exists(path.join(project, 'docs/design/tokens.json')) && !exists(path.join(project, 'docs/design/DESIGN.md'))) out('design-check: no design system yet (run /pilot:design).');
+    else out(r.errors.length ? `design-check: ${r.errors.length} error(s).` : 'design-check: passed.');
+    process.exit(r.errors.length ? 1 : 0);
+  },
+
   // Switch the model profile in the manifest and project settings.
   profile() {
     const target = opts._[0];
@@ -175,7 +205,7 @@ const commands = {
 };
 
 if (!cmd || !commands[cmd]) {
-  out('usage: pilot.js <version|plan|scaffold|record|trace|check|sync|review|preview|profile|doctor> [--project <dir>] [options]');
+  out('usage: pilot.js <version|plan|scaffold|record|trace|check|sync|review|preview|design-init|design-check|profile|doctor> [--project <dir>] [options]');
   process.exit(cmd ? 1 : 0);
 }
 commands[cmd]();

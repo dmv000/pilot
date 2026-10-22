@@ -39,6 +39,7 @@ All rows: added 2026-10-22, designed by Claude Opus 5.5, tuned for the `pro` pro
 | AGT-06 | `plugin/agents/code-reviewer.md` | Fresh-context review against FR IDs | F20, F01 | E-12, E-01 | built | Bundled `/code-review` passes E-12 with FR checking |
 | AGT-07 | `plugin/agents/security-reviewer.md` | OWASP review of risky diffs | F06, F14 | E-06 | built | — |
 | AGT-08 | `plugin/agents/doc-keeper.md` | Update PROGRESS, HANDOFF, traceability on Haiku | F05 | E-05, C-trace | built | Main session does it within the same cost |
+| AGT-09 | `plugin/agents/design-reviewer.md` | Fresh-context review of UI changes against DESIGN.md, tokens and WCAG 2.2 AA | R9, F20 | T-design (design-check it runs); E-12 pattern | built | Native review checks design systems with the same result |
 
 ## Hooks
 
@@ -71,6 +72,8 @@ All rows: added 2026-10-22, designed by Claude Opus 5.5, tuned for the `pro` pro
 | TPL-SET | `plugin/templates/settings/` | Permission profile, model profile, output style | F06, F11 | T-settings (schema), E-06 | built | — |
 | TPL-GH | `plugin/templates/github/` | Project CI workflow and issue templates | F01, R8 | golden CI run on a fixture project | built | — |
 | TPL-SCHEMA | `plugin/templates/schemas/` | JSON Schemas for manifest, state, traceability, review verdicts | F09 | T-schema | built | — |
+| TPL-DESIGN | `plugin/templates/design/` | Starter DESIGN.md (rule sections) and tokens.json (W3C tokens with WCAG-passing contrast pairs) | R9 | T-design | built | — |
+| MNT-09 | `plugin/scripts/lib/design.js` | design-check: token structure, WCAG contrast of declared pairs, required sections, hard-coded colors; also part of pilot-check | R9 | T-design | built | — |
 | ACT-01 | `.github/actions/pilot-check/` | Traceability, ID ownership, restatement, headers, size limits | F03, F05, F17 | fixture projects with planted violations | built | — |
 
 ## Kit maintenance

@@ -53,3 +53,14 @@ Update:
 - docs/LESSONS.md: add entries for mistakes found in this step: <list, or "none">.
 Change nothing else. Return the list of files changed.
 ```
+
+## E. design-reviewer
+
+```text
+Review the UI change <git diff command or range> for step <N>.
+Requirements: <FR/NFR IDs with text, especially accessibility and language NFRs>.
+Design sources: docs/design/DESIGN.md (rules) and docs/design/tokens.json (values).
+Run pilot.js design-check first and include its output.
+Report only findings that break DESIGN.md, a stated requirement, or WCAG 2.2 AA, each with file:line and the concrete problem.
+Return JSON: { "verdict": "pass" | "fail", "findings": [ … ] }. The verdict is fail if any major finding exists.
+```
