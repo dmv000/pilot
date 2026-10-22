@@ -10,6 +10,16 @@ Marking convention: **[V:Sn]** means verified against source Sn in the source li
 
 ---
 
+## Answers recorded 2026-10-22
+
+| Question | Decision |
+| --- | --- |
+| 1. Install path | **Drop the `npx` wrapper.** Install is `claude plugin install pilot --marketplace <owner>/pilot`. `/pilot:doctor` does the preflight checks |
+| 2. Benchmark arms | **Two arms:** plain Claude Code vs pilot. Superpowers is not measured |
+| 3. Benchmark host | **WSL2 on the owner's PC,** billed to the Pro plan. P4 includes the WSL2 setup steps (bubblewrap, socat) |
+| 4. Dynamic workflows | **Owner will enable them.** `/pilot:research-stack` runs as a workflow under 5 agents; the subagent fallback stays for users who leave them off |
+| 5. GitHub owner | Still open. Needed before publishing in P4 |
+
 ## Questions for the owner (answer before P2)
 
 1. **Install path.** Claude Code now installs a marketplace plugin in one shell command: `claude plugin install pilot --marketplace <owner>/pilot` [V:S6]. That already meets requirement 1. Should v1 **drop the `npx` wrapper**, with `/pilot:doctor` doing the checks the wrapper would have done? My recommendation is to drop it, because a file that prevents no failure is deleted (section 3). The npm name `pilot` is also taken. `pilot-kit` was free on 2026-10-22.
