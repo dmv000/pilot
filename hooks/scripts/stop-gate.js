@@ -1,0 +1,60 @@
+// H05 Stop: a turn that changed code may not end while the fast checks fail (F01, F02).
+// The hook runs the checks itself instead of trusting a claim that they passed.
+import { spawnSync } from 'node:child_process';
+import crypto from 'node:crypto';
+import { start, emit } from '../lib/project.js';
+import { readState, updateState } from '../lib/state.js';
+import { TODO_WITHOUT_ISSUE } from '../lib/patterns.js';
+
+const ctx = start();
+if (!ctx) process.exit(0);
+const { input, dir, manifest } = ctx;
+const state = readState(dir);
+if (!state.dirty) process.exit(0);
+
+const fast = manifest.checks?.fast;
+if (!fast) {
+  emit({ systemMessage: 'pilot: code changed, but .pilot/manifest.json has no checks.fast command, so nothing verified it. Run /pilot:doctor.' });
+  process.exit(0);
+}
+
+// 1. New TODO/FIXME lines without an issue reference.
+const todos = [];
+const diff = spawnSync('git', ['diff', '-U0', '--no-color', 'HEAD'], { cwd: dir, encoding: 'utf8' });
+if (diff.status === 0) {
+  let file = '';
+  for (const line of diff.stdout.split('\n')) {
+    if (line.startsWith('+++ ')) file = line.replace(/^\+\+\+ (b\/)?/, '');
+    else if (line.startsWith('+') && TODO_WITHOUT_ISSUE.test(line)) todos.push(`${file}: ${line.slice(1).trim()}`);
+  }
+}
+
+// 2. Run the fast checks.
+const run = spawnSync(fast, { cwd: dir, shell: true, encoding: 'utf8', timeout: 300000, maxBuffer: 20 * 1024 * 1024 });
+const output = `${run.stdout ?? ''}\n${run.stderr ?? ''}`.trim();
+const timedOut = run.error?.code === 'ETIMEDOUT';
+const passed = run.status === 0 && !timedOut;
+
+if (passed && todos.length === 0) {
+  updateState(dir, { dirty: false, lastGreen: { at: new Date().toISOString(), command: fast }, stopFailures: null });
+  process.exit(0);
+}
+
+const lines = [];
+if (!passed) {
+  const tail = output.split('\n').slice(-40).join('\n');
+  lines.push(`The fast checks failed${timedOut ? ' (timed out after 300 s)' : ` (exit ${run.status})`}: \`${fast}\``, tail);
+}
+if (todos.length) lines.push('New TODO/FIXME without an issue reference. Add "(#<issue>)" or file one with /pilot:bug:', ...todos.slice(0, 10));
+const reason = ('pilot: this turn changed code and is not done yet.\n' + lines.join('\n')).slice(0, 3000);
+
+const hash = crypto.createHash('sha256').update(lines.join('\n')).digest('hex').slice(0, 16);
+const prev = state.stopFailures;
+if (input.stop_hook_active && prev && prev.hash === hash && prev.count >= 1) {
+  updateState(dir, { stopFailures: { hash, count: prev.count + 1 } });
+  emit({ systemMessage: `pilot: the fast checks still fail after a retry with no change in the failure. Claude was allowed to stop, but this work is NOT verified.\n${reason}` });
+  process.exit(0);
+}
+updateState(dir, { stopFailures: { hash, count: prev && prev.hash === hash ? prev.count + 1 : 1 } });
+emit({ decision: 'block', reason });
+process.exit(0);

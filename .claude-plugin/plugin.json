@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin-manifest.json",
+  "name": "pilot",
+  "displayName": "pilot",
+  "version": "0.1.0",
+  "description": "Project lifecycle kit for Claude Code: interview, traceable specs, tests-first build loop, enforced quality gates, safe updates.",
+  "author": { "name": "Dms Db" },
+  "license": "MIT",
+  "keywords": ["spec-driven", "tdd", "quality-gates", "project-setup", "hooks"]
+}

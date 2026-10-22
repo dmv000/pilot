@@ -1,0 +1,9 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
+  "name": "pilot",
+  "description": "The pilot kit for Claude Code.",
+  "owner": { "name": "Dms Db" },
+  "plugins": [
+    { "name": "pilot", "source": "./", "description": "Project lifecycle kit: interview, traceable specs, tests-first build loop, enforced quality gates." }
+  ]
+}

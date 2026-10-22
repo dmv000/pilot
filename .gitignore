@@ -1,2 +1,5 @@
 node_modules/
+evals/results/
+bench/results/*.tmp
+bench/.work/
 .DS_Store

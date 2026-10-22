@@ -1,0 +1,17 @@
+{
+  "name": "pilot-kit",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Development tooling for the pilot Claude Code plugin. The plugin itself has no runtime dependencies.",
+  "type": "module",
+  "license": "MIT",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.js\"",
+    "check:registry": "node scripts/check-registry.js",
+    "check:budget": "node scripts/check-budget.js",
+    "check": "npm test && npm run check:registry",
+    "eval": "claude plugin eval . --ablation with-without --runs 3 --threshold 0.8 --trust-plugin --scaffold --no-publish",
+    "bench": "node bench/run.mjs"
+  }
+}
