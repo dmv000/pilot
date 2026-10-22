@@ -1,0 +1,12 @@
+name: pilot-check
+description: Checks a pilot project - requirement traceability, ID ownership, restated facts, doc headers, size limits, placeholders, new TODOs without issues.
+inputs:
+  project:
+    description: Project directory to check
+    default: "."
+  base:
+    description: Git ref to diff against for new TODOs (defaults to the pull request base branch)
+    default: ""
+runs:
+  using: node24
+  main: index.js

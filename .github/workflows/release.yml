@@ -1,0 +1,23 @@
+name: release
+on:
+  push:
+    branches: [main]
+permissions:
+  contents: write
+  pull-requests: write
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.release_created }}
+      - name: Require a recent local eval run (release rule from P3)
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          test -f evals/history.jsonl || { echo "No evals/history.jsonl: run npm run eval in WSL2 before releasing."; exit 1; }
+          tail -n 1 evals/history.jsonl

@@ -2,5 +2,6 @@
 # pilot
 .pilot/state.json
 .pilot/backups/
+.pilot/tmp/
 CLAUDE.local.md
 .claude/settings.local.json

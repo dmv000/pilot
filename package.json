@@ -5,13 +5,16 @@
   "description": "Development tooling for the pilot Claude Code plugin. The plugin itself has no runtime dependencies.",
   "type": "module",
   "license": "MIT",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "test": "node --test \"tests/**/*.test.js\"",
     "check:registry": "node scripts/check-registry.js",
     "check:budget": "node scripts/check-budget.js",
     "check": "npm test && npm run check:registry",
     "eval": "claude plugin eval . --ablation with-without --runs 3 --threshold 0.8 --trust-plugin --scaffold --no-publish",
-    "bench": "node bench/run.mjs"
+    "bench": "node bench/run.mjs",
+    "check:release": "npm test && npm run check:registry && npm run check:budget && claude plugin validate --strict . && claude plugin validate --strict .claude-plugin/plugin.json"
   }
 }
