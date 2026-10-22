@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "sandbox": {
+    "enabled": true,
+    "failIfUnavailable": true,
+    "allowUnsandboxedCommands": false,
+    "autoAllowBashIfSandboxed": true,
+    "network": {
+      "allowedDomains": ["registry.npmjs.org", "*.npmjs.org", "pypi.org", "files.pythonhosted.org"],
+      "allowLocalBinding": true
+    }
+  },
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "Agent", "Skill", "Workflow", "TodoWrite"],
+    "deny": ["WebFetch", "WebSearch"]
+  },
+  "workflowSizeGuideline": "small"
+}

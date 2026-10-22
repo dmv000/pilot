@@ -1,0 +1,16 @@
+{
+  "name": "bench-task",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/run-tests.mjs tests",
+    "test:acceptance": "node scripts/run-tests.mjs tests/acceptance",
+    "check:fast": "npm run typecheck && node scripts/run-tests.mjs tests --exclude tests/acceptance",
+    "check": "npm run typecheck && node scripts/run-tests.mjs tests"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "@types/node": "24.10.1"
+  }
+}

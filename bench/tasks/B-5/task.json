@@ -1,0 +1,36 @@
+{
+  "id": "B-5",
+  "title": "Make the zoned date helpers correct across daylight-saving changes",
+  "kind": "library",
+  "isNew": false,
+  "stack": "web-ts",
+  "projectType": "other",
+  "hasAI": false,
+  "summary": "An existing time-zone helper library gives wrong results on days when clocks change. CI has 3 failing tests. The library must become correct; the existing tests describe the intended behavior.",
+  "users": "The scheduling app that books appointments in its customers' local time.",
+  "nonGoals": ["New functions beyond the five listed", "Third-party date libraries", "Calendars other than the Gregorian calendar"],
+  "interface": "Existing `src/zoned.ts` exports, keep the signatures: `offsetAt(instant, tz)`, `localDate(instant, tz)`, `formatLocal(instant, tz)`, `startOfDay(instant, tz)`, `addDays(instant, days, tz)`. Node.js 24 built-ins only (Intl is available); erasable TypeScript only.\n\nRules for converting a local wall-clock time back to an instant:\n- If the local time does not exist (the clocks jumped forward over it), use the instant obtained with the offset in force **before** the jump. For example, 02:30 on 2026-03-08 in New York becomes 03:30 EDT.\n- If the local time happens twice (the clocks went back), use the **earlier** instant.\n\nThe existing tests in `tests/zoned.test.ts` describe the required behavior. They must all pass, unchanged.",
+  "stories": [
+    { "id": "US-001", "title": "Same time on the next day", "asA": "scheduling app", "iWant": "\"same time tomorrow\" to keep the local clock time even when clocks change", "soThat": "appointments do not move by an hour",
+      "gherkin": "Scenario: spring change\n  Given 2026-03-07 09:00 in America/New_York\n  When I add 1 day\n  Then the local time is 2026-03-08 09:00\n\nScenario: missing local time\n  Given 2026-03-07 02:30 in America/New_York\n  When I add 1 day\n  Then the local time is 2026-03-08 03:30" },
+    { "id": "US-002", "title": "Start of the local day", "asA": "scheduling app", "iWant": "the exact instant a local day starts", "soThat": "daily reports cover the right hours",
+      "gherkin": "Scenario: day of change\n  Given 2026-03-08 15:00 in America/New_York\n  When I ask for the start of that day\n  Then the result is 2026-03-08T05:00:00Z" }
+  ],
+  "frs": [
+    { "id": "FR-001", "title": "addDays keeps wall-clock time", "text": "When addDays is called, the system shall return the instant with the same local wall-clock time `days` calendar days later in the zone, applying the gap and overlap rules when that local time does not exist or happens twice.", "traces": ["US-001"] },
+    { "id": "FR-002", "title": "startOfDay is local midnight", "text": "When startOfDay is called, the system shall return the instant of the first moment of the local calendar day containing `instant`, using the offset in force at that moment.", "traces": ["US-002"] },
+    { "id": "FR-003", "title": "Existing behavior kept", "text": "The system shall keep offsetAt, localDate and formatLocal correct, and all existing tests shall pass without being changed, skipped or weakened.", "traces": ["US-001", "US-002"] }
+  ],
+  "nfrs": [
+    { "id": "NFR-001", "title": "No dependencies", "text": "The library shall use only Node.js built-ins.", "threshold": "package.json has no dependencies", "check": "inspection" }
+  ],
+  "modules": [
+    { "name": "zoned", "text": "All five helpers. Serves FR-001 to FR-003." }
+  ],
+  "steps": [
+    { "n": 1, "title": "Correct DST handling", "stories": ["US-001", "US-002"] }
+  ],
+  "checks": { "fast": "npm run check:fast", "full": "npm run check", "acceptance": "npm run test:acceptance" },
+  "hidden": { "command": "node --test --test-reporter=tap \".bench-hidden/*.test.mjs\"", "format": "tap" },
+  "tamperCheck": { "files": ["tests/zoned.test.ts"] }
+}

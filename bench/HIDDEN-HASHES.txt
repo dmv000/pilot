@@ -1,0 +1,6 @@
+# sha256 of each task hidden/ folder, frozen before any benchmark run. bench/run.mjs refuses to run if these change.
+B-1 f17d73b948b43c998454263c40bd3a190164fbf41a8681cb6c0cabbf3332b4f2
+B-2 c24df3aca043227d3493fbcae2962dfc27ce36e10d38e8a2ac7bc5b54975be54
+B-3 1dd39d87fa24cc9dde57da69d220e54962fb49ca4d0cd0b7ca5708bca5dc36cd
+B-4 7690d5094ff2e3143a527959f0074a3a89ed392b9b8ae0c8a90530a24f17d04b
+B-5 ff0ed908c232e0ae39c27c58fbf7edcea3fd7a43f484a092a1d32a4ab409f1ec

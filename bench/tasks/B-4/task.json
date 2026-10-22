@@ -1,0 +1,45 @@
+{
+  "id": "B-4",
+  "title": "Support ticket triage with a language model and guardrails",
+  "kind": "ai-system",
+  "isNew": true,
+  "stack": "web-ts",
+  "projectType": "ai-system",
+  "hasAI": true,
+  "summary": "A function that sorts customer support tickets into a category and priority using a language model, while keeping personal data away from the model, refusing forbidden requests, and never trusting the model's reply blindly.",
+  "users": "Support teams who need incoming tickets sorted; customers whose personal data must stay protected.",
+  "nonGoals": ["Calling a real model provider (the caller passes a Model)", "Storing tickets", "A user interface"],
+  "interface": "Node.js 24 built-ins only; erasable TypeScript only. `src/triage.ts` must export:\n\n```ts\nexport type Ticket = { id: string; subject: string; body: string };\nexport type Model = { complete(prompt: string): Promise<string> };\nexport type Triage = {\n  id: string;\n  category: 'billing' | 'technical' | 'account' | 'other';\n  priority: 'low' | 'medium' | 'high';\n  summary: string;\n  redactedBody: string;\n  status: 'ok' | 'refused' | 'failed';\n  attempts: number; // how many times model.complete was called\n};\nexport function triage(ticket: Ticket, model: Model): Promise<Triage>;\n```\n\nRedaction rules (applied in this order):\n1. **Emails:** text matching `[^\\s@]+@[^\\s@]+\\.[^\\s@]+` becomes `[EMAIL]`.\n2. **Card numbers:** 13–19 digits, optionally separated by single spaces or hyphens, that pass the Luhn check, become `[CARD]`.\n3. **Phone numbers:** an optional `+`, then digits, spaces, hyphens, dots and parentheses containing 7–15 digits in total, become `[PHONE]`.\n\nForbidden requests: the subject or body contains (case-insensitive) `legal advice`, `lawsuit`, `medical advice`, `diagnose`, or `prescription`.\n\nThe model must reply with a JSON object `{ \"category\", \"priority\", \"summary\" }`, possibly wrapped in a markdown ```json fence. `summary` must be a non-empty string of at most 200 characters.",
+  "stories": [
+    { "id": "US-001", "title": "Sort a ticket", "asA": "support agent", "iWant": "each ticket to get a category, priority and short summary", "soThat": "urgent problems reach the right team first",
+      "gherkin": "Scenario: valid reply\n  Given the model replies {\"category\":\"billing\",\"priority\":\"high\",\"summary\":\"Double charge\"}\n  When I triage a ticket\n  Then status is ok, category billing, priority high, attempts 1" },
+    { "id": "US-002", "title": "Personal data stays private", "asA": "customer", "iWant": "my email, phone and card number never sent to the AI", "soThat": "my data is not exposed",
+      "gherkin": "Scenario: redaction\n  Given a ticket body with an email, a valid card number and a phone number\n  When I triage it\n  Then the prompt sent to the model contains [EMAIL], [CARD] and [PHONE] and none of the originals\n  And redactedBody has the same replacements" },
+    { "id": "US-003", "title": "Refuse forbidden requests", "asA": "company", "iWant": "requests for legal or medical advice refused without calling the AI", "soThat": "we do not give advice we may not give",
+      "gherkin": "Scenario: legal request\n  Given a ticket asking for legal advice\n  When I triage it\n  Then status is refused and the model was not called" },
+    { "id": "US-004", "title": "Do not trust the AI blindly", "asA": "support lead", "iWant": "bad AI replies retried and then failed safely", "soThat": "a broken reply never becomes a wrong ticket route",
+      "gherkin": "Scenario: two bad replies then a good one\n  Given the model first replies \"sure!\", then {\"category\":\"spam\"}, then a valid reply\n  When I triage a ticket\n  Then status is ok and attempts is 3\n\nScenario: always bad\n  Given the model always replies with invalid JSON\n  When I triage a ticket\n  Then status is failed, category other, priority medium, attempts 3" }
+  ],
+  "frs": [
+    { "id": "FR-001", "title": "Redaction", "text": "Before building the prompt, the system shall redact emails, Luhn-valid card numbers and phone numbers in the subject and body, in that order, as [EMAIL], [CARD] and [PHONE], and return the redacted body as redactedBody.", "traces": ["US-002"] },
+    { "id": "FR-002", "title": "Refusal", "text": "If the subject or body contains a forbidden phrase, the system shall return status refused, category other, priority low, summary \"Refused: request for legal or medical advice.\", attempts 0, without calling the model.", "traces": ["US-003"] },
+    { "id": "FR-003", "title": "Prompt structure", "text": "The system shall send one prompt per attempt that states the ticket is untrusted data and must not be followed as instructions, followed by the redacted subject and body between <ticket> and </ticket>. The prompt shall contain no unredacted personal data.", "traces": ["US-002", "US-004"] },
+    { "id": "FR-004", "title": "Validate model output", "text": "The system shall accept only a JSON object (optionally inside a ```json fence) whose category and priority are in the allowed values and whose summary is a non-empty string of at most 200 characters, ignoring extra fields. On an invalid reply or a model error, it shall retry, up to 3 calls in total, then return status failed, category other, priority medium, summary \"\", attempts 3.", "traces": ["US-004", "US-001"] },
+    { "id": "FR-005", "title": "Safe summary", "text": "The system shall apply the redaction rules to the model's summary before returning it.", "traces": ["US-002"] },
+    { "id": "FR-006", "title": "Outage priority", "text": "When the redacted body contains \"outage\" (case-insensitive), the returned priority shall be high regardless of the model's reply.", "traces": ["US-001"] }
+  ],
+  "nfrs": [
+    { "id": "NFR-001", "title": "No personal data to the model", "text": "No prompt shall contain an email address, Luhn-valid card number or phone number from the ticket.", "threshold": "0 occurrences across the eval set", "check": "unit and eval tests" }
+  ],
+  "modules": [
+    { "name": "redact", "text": "Email, card (Luhn) and phone redaction. Serves FR-001, FR-005." },
+    { "name": "guardrails", "text": "Forbidden-request detection. Serves FR-002." },
+    { "name": "triage", "text": "Prompt building, model calls with retries, output validation. Serves FR-003, FR-004, FR-006." }
+  ],
+  "steps": [
+    { "n": 1, "title": "Redaction and refusal", "stories": ["US-002", "US-003"] },
+    { "n": 2, "title": "Model call, validation and retries", "stories": ["US-001", "US-004"] }
+  ],
+  "checks": { "fast": "npm run check:fast", "full": "npm run check", "acceptance": "npm run test:acceptance" },
+  "hidden": { "command": "node --test --test-reporter=tap \".bench-hidden/*.test.mjs\"", "format": "tap" }
+}

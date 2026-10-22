@@ -1,0 +1,199 @@
+{
+  "id": "B-1",
+  "title": "Link shortener HTTP API",
+  "kind": "web-app",
+  "isNew": true,
+  "stack": "web-ts",
+  "projectType": "web-app",
+  "hasAI": false,
+  "summary": "A small HTTP service that turns long web addresses into short codes, redirects visitors, counts clicks, and lets links expire.",
+  "users": "Visitors who paste a long link and share the short one; people who later open the short link.",
+  "nonGoals": [
+    "User accounts or login",
+    "Custom (user-chosen) codes",
+    "Persistent storage: an in-memory store is enough",
+    "Analytics beyond a click counter"
+  ],
+  "interface": "Use Node.js 24 built-ins only (node:http); no runtime dependencies. TypeScript must use erasable syntax only (no enums, no namespaces, no parameter properties) because Node runs .ts files by stripping types.\n\n`src/server.ts` must export:\n\n```ts\nexport function createServer(options?: { now?: () => number; baseUrl?: string }): import('node:http').Server\n```\n\n- `now` returns the current time in milliseconds (default `Date.now`). All expiry decisions use it.\n- `baseUrl` (default `http://localhost`) prefixes short links: `shortUrl = baseUrl + '/' + code`.\n- The server is not started by the module; callers call `.listen()`.\n\nEndpoints (all JSON bodies are UTF-8 JSON; error bodies are `{ \"error\": { \"code\": string, \"message\": string } }`):\n\n| Method and path | Success | Errors |\n| --- | --- | --- |\n| `POST /api/links` body `{ \"url\": string, \"expiresInSeconds\"?: integer }` | `201` `{ \"code\", \"shortUrl\", \"expiresAt\": ISO-8601 string or null }` | `400` with code `invalid_body`, `invalid_url`, `forbidden_target` or `invalid_expiry` |\n| `GET /<code>` | `302` with `Location: <url>`; increments the click count | `404` `not_found`; `410` `expired` |\n| `GET /api/links/<code>` | `200` `{ \"code\", \"url\", \"clicks\", \"createdAt\", \"expiresAt\" }` | `404` `not_found` |\n| `GET /` | `200` `text/html` page with a form to shorten a link | |\n| any other method on `/api/links` | | `405` `method_not_allowed` |\n\nCodes are exactly 7 characters from `A-Z a-z 0-9`, unique for the life of the process. Each POST creates a new code, even for a URL seen before.",
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Shorten a link",
+      "asA": "visitor",
+      "iWant": "to turn a long link into a short one",
+      "soThat": "I can share it easily",
+      "gherkin": "Scenario: valid link\n  Given the service is running\n  When I POST {\"url\":\"https://example.com/a/very/long/path\"} to /api/links\n  Then the response is 201\n  And the body has a 7-character code and shortUrl equal to baseUrl + \"/\" + code\n\nScenario: invalid link\n  When I POST {\"url\":\"ftp://example.com\"} to /api/links\n  Then the response is 400 with error code invalid_url"
+    },
+    {
+      "id": "US-002",
+      "title": "Follow a short link",
+      "asA": "person who received a short link",
+      "iWant": "to be sent to the original page",
+      "soThat": "the short link works like the long one",
+      "gherkin": "Scenario: redirect\n  Given a link was created for https://example.com/x\n  When I GET /<code>\n  Then the response is 302 with Location https://example.com/x\n  And the click count for the code increases by 1\n\nScenario: unknown code\n  When I GET /zzzzzzz\n  Then the response is 404 with error code not_found"
+    },
+    {
+      "id": "US-003",
+      "title": "Links that expire",
+      "asA": "visitor",
+      "iWant": "my short link to stop working after a time I choose",
+      "soThat": "temporary links do not live forever",
+      "gherkin": "Scenario: expired link\n  Given a link was created with expiresInSeconds 60 at time T\n  When I GET /<code> at time T + 60 seconds\n  Then the response is 410 with error code expired\n  And the click count does not change\n\nScenario: just before expiry\n  When I GET /<code> at time T + 59.999 seconds\n  Then the response is 302"
+    },
+    {
+      "id": "US-004",
+      "title": "See link stats",
+      "asA": "visitor",
+      "iWant": "to see how many times my link was opened",
+      "soThat": "I know it is being used",
+      "gherkin": "Scenario: stats\n  Given a link was opened twice\n  When I GET /api/links/<code>\n  Then the response is 200 and clicks is 2"
+    },
+    {
+      "id": "US-005",
+      "title": "Use it from a web page",
+      "asA": "visitor without tools",
+      "iWant": "a simple page with a form",
+      "soThat": "I can shorten links in a browser",
+      "gherkin": "Scenario: home page\n  When I GET /\n  Then the response is 200 text/html\n  And the page has a form with a text input that has a visible label"
+    }
+  ],
+  "frs": [
+    {
+      "id": "FR-001",
+      "title": "Create short link",
+      "text": "When a POST /api/links request has a valid body, the system shall store the link and respond 201 with a new unique 7-character code from A-Z, a-z, 0-9, its shortUrl, and expiresAt.",
+      "traces": [
+        "US-001"
+      ]
+    },
+    {
+      "id": "FR-002",
+      "title": "Validate the URL",
+      "text": "When the url is missing, not a string, longer than 2048 characters, not parseable, or not http/https, the system shall respond 400 invalid_url. When the body is not a JSON object, the system shall respond 400 invalid_body.",
+      "traces": [
+        "US-001"
+      ]
+    },
+    {
+      "id": "FR-003",
+      "title": "Refuse private targets",
+      "text": "When the url host is localhost, a loopback, private or link-local IPv4 address (127.0.0.0/8, 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16, 169.254.0.0/16) or the IPv6 loopback [::1], the system shall respond 400 forbidden_target.",
+      "traces": [
+        "US-001"
+      ]
+    },
+    {
+      "id": "FR-004",
+      "title": "Redirect",
+      "text": "When GET /<code> names an existing, unexpired link, the system shall respond 302 with Location set to the original url and increase its click count by 1.",
+      "traces": [
+        "US-002"
+      ]
+    },
+    {
+      "id": "FR-005",
+      "title": "Unknown codes",
+      "text": "When GET /<code> or GET /api/links/<code> names no stored link, the system shall respond 404 not_found.",
+      "traces": [
+        "US-002",
+        "US-004"
+      ]
+    },
+    {
+      "id": "FR-006",
+      "title": "Expiry",
+      "text": "If expiresInSeconds is given, it shall be an integer from 60 to 31536000, otherwise the system shall respond 400 invalid_expiry. When now() is at or after expiresAt, GET /<code> shall respond 410 expired and shall not change the click count. Without expiresInSeconds, expiresAt is null and the link never expires.",
+      "traces": [
+        "US-003"
+      ]
+    },
+    {
+      "id": "FR-007",
+      "title": "Stats",
+      "text": "When GET /api/links/<code> names a stored link (expired or not), the system shall respond 200 with code, url, clicks, createdAt and expiresAt.",
+      "traces": [
+        "US-004"
+      ]
+    },
+    {
+      "id": "FR-008",
+      "title": "Home page",
+      "text": "When GET / is requested, the system shall respond 200 with an HTML page containing a form with a URL input that has an associated label element.",
+      "traces": [
+        "US-005"
+      ]
+    },
+    {
+      "id": "FR-009",
+      "title": "Method not allowed",
+      "text": "When /api/links receives a method other than POST, the system shall respond 405 method_not_allowed.",
+      "traces": [
+        "US-001"
+      ]
+    }
+  ],
+  "nfrs": [
+    {
+      "id": "NFR-001",
+      "title": "No runtime dependencies",
+      "text": "The service shall use only Node.js built-in modules at runtime.",
+      "threshold": "package.json has no dependencies",
+      "check": "inspection in CI"
+    },
+    {
+      "id": "NFR-002",
+      "title": "Type safety",
+      "text": "The code shall pass tsc --noEmit with strict mode.",
+      "threshold": "0 type errors",
+      "check": "npm run typecheck"
+    }
+  ],
+  "modules": [
+    {
+      "name": "server",
+      "text": "HTTP routing, JSON parsing, error responses. Serves FR-001 to FR-009."
+    },
+    {
+      "name": "links",
+      "text": "In-memory link store, code generation, expiry and click counting. Serves FR-001, FR-004 to FR-007."
+    },
+    {
+      "name": "validate",
+      "text": "URL and expiry validation. Serves FR-002, FR-003, FR-006."
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Create and validate links",
+      "stories": [
+        "US-001"
+      ]
+    },
+    {
+      "n": 2,
+      "title": "Redirects, expiry and stats",
+      "stories": [
+        "US-002",
+        "US-003",
+        "US-004"
+      ]
+    },
+    {
+      "n": 3,
+      "title": "Home page",
+      "stories": [
+        "US-005"
+      ]
+    }
+  ],
+  "checks": {
+    "fast": "npm run check:fast",
+    "full": "npm run check",
+    "acceptance": "npm run test:acceptance"
+  },
+  "hidden": {
+    "command": "node --test --test-reporter=tap \".bench-hidden/*.test.mjs\"",
+    "format": "tap"
+  }
+}

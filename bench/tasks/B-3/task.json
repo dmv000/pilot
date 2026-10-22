@@ -1,0 +1,135 @@
+{
+  "id": "B-3",
+  "title": "CSV to JSON command-line tool with schema validation",
+  "kind": "script",
+  "isNew": true,
+  "stack": "generic",
+  "projectType": "script",
+  "hasAI": false,
+  "summary": "A command-line tool that converts a CSV file to a JSON array using a small schema that gives each column a type and rules, reporting every problem clearly.",
+  "users": "Analysts and scripts that need clean typed JSON from spreadsheet exports.",
+  "nonGoals": [
+    "Streaming files larger than memory",
+    "Excel files",
+    "Writing CSV"
+  ],
+  "interface": "Python 3.11+, standard library only (no pip packages). Package `csv2json/` with `__main__.py`, run as:\n\n```bash\npython3 -m csv2json INPUT.csv --schema SCHEMA.json [-o OUTPUT.json]\n```\n\nWithout `-o`, the JSON goes to standard output. Output is a JSON array of objects, one per data row, keys in schema order, written with `json.dumps(rows, ensure_ascii=False, indent=2)`.\n\nSchema file: `{ \"columns\": { \"<name>\": { \"type\": \"string\"|\"integer\"|\"number\"|\"boolean\", \"required\"?: bool, \"min\"?: number, \"max\"?: number, \"pattern\"?: regex } } }`.\n\n- The CSV's first row is the header. Its column names must equal the schema's columns as a set.\n- Cells are trimmed of surrounding spaces.\n- An empty cell becomes `null`, or an error if the column is required.\n- `integer` accepts an optional sign and digits only. `number` accepts anything `float()` accepts except nan and inf.\n- `boolean` accepts true/false/yes/no/1/0 in any letter case.\n- `min` and `max` apply to integer and number. `pattern` is a full match (`re.fullmatch`) on string columns.\n\nExit codes and messages:\n\n- **0:** success.\n- **2:** data errors. Every error is printed to standard error, one per line, as `line <N>: <column>: <message>`, where N is the 1-based physical line number in the file of the row's first line. All rows are checked; no output file is written.\n- **1:** usage problems, printed to standard error as one line starting `error: `. These are a missing input or schema file, an invalid schema JSON, unknown type names, and header problems (`error: missing column <name>`, `error: unknown column <name>`).\n\nInput is UTF-8 and may start with a byte-order mark. Quoted fields may contain commas, quotes and newlines (standard CSV).",
+  "stories": [
+    {
+      "id": "US-001",
+      "title": "Convert a clean file",
+      "asA": "analyst",
+      "iWant": "to turn a CSV export into typed JSON",
+      "soThat": "other tools can use it",
+      "gherkin": "Scenario: typed output\n  Given people.csv with columns name, age, active and a matching schema\n  When I run python3 -m csv2json people.csv --schema schema.json\n  Then exit code is 0\n  And stdout is a JSON array where age is a number and active is true or false"
+    },
+    {
+      "id": "US-002",
+      "title": "See every problem at once",
+      "asA": "analyst",
+      "iWant": "all errors listed with line and column",
+      "soThat": "I can fix the file in one pass",
+      "gherkin": "Scenario: two bad rows\n  Given a CSV where line 3 has age \"abc\" and line 5 has an empty required name\n  When I run the tool\n  Then exit code is 2\n  And stderr has a line starting \"line 3: age:\" and a line starting \"line 5: name:\"\n  And no output file is written"
+    },
+    {
+      "id": "US-003",
+      "title": "Clear usage errors",
+      "asA": "script author",
+      "iWant": "distinct exit codes",
+      "soThat": "my pipeline can react",
+      "gherkin": "Scenario: header mismatch\n  Given a CSV header with a column not in the schema\n  When I run the tool\n  Then exit code is 1\n  And stderr is \"error: unknown column <name>\""
+    }
+  ],
+  "frs": [
+    {
+      "id": "FR-001",
+      "title": "Typed conversion",
+      "text": "When the input and schema are valid, the system shall write a JSON array of objects with values converted per column type, keys in schema order, empty optional cells as null, and exit 0.",
+      "traces": [
+        "US-001"
+      ]
+    },
+    {
+      "id": "FR-002",
+      "title": "Type rules",
+      "text": "The system shall convert integer (optional sign and digits), number (float() without nan or inf), boolean (true/false/yes/no/1/0 in any case) and string, and apply min, max and full-match pattern rules.",
+      "traces": [
+        "US-001",
+        "US-002"
+      ]
+    },
+    {
+      "id": "FR-003",
+      "title": "Report all data errors",
+      "text": "When any cell breaks a rule, the system shall print one line per error to stderr as line <N>: <column>: <message> with N the physical line of the row's start, check every row, write no output, and exit 2.",
+      "traces": [
+        "US-002"
+      ]
+    },
+    {
+      "id": "FR-004",
+      "title": "Usage errors",
+      "text": "When the input or schema file is missing, the schema is invalid or names an unknown type, or the header does not match the schema columns, the system shall print one line starting \"error: \" to stderr and exit 1.",
+      "traces": [
+        "US-003"
+      ]
+    },
+    {
+      "id": "FR-005",
+      "title": "CSV edge cases",
+      "text": "The system shall accept a UTF-8 byte-order mark, quoted fields containing commas, quotes and newlines, and surrounding spaces in cells.",
+      "traces": [
+        "US-001"
+      ]
+    }
+  ],
+  "nfrs": [
+    {
+      "id": "NFR-001",
+      "title": "Standard library only",
+      "text": "The tool shall use only the Python standard library.",
+      "threshold": "no third-party imports",
+      "check": "inspection"
+    }
+  ],
+  "modules": [
+    {
+      "name": "cli",
+      "text": "Argument parsing, exit codes, output writing. Serves FR-001, FR-003, FR-004."
+    },
+    {
+      "name": "schema",
+      "text": "Schema loading and validation. Serves FR-004."
+    },
+    {
+      "name": "convert",
+      "text": "Row conversion and rule checks. Serves FR-001 to FR-003, FR-005."
+    }
+  ],
+  "steps": [
+    {
+      "n": 1,
+      "title": "Typed conversion and CSV edge cases",
+      "stories": [
+        "US-001"
+      ]
+    },
+    {
+      "n": 2,
+      "title": "Error reporting and exit codes",
+      "stories": [
+        "US-002",
+        "US-003"
+      ]
+    }
+  ],
+  "checks": {
+    "fast": "python3 scripts/run_tests.py tests --exclude tests/acceptance",
+    "full": "python3 scripts/run_tests.py tests",
+    "acceptance": "python3 scripts/run_tests.py tests/acceptance"
+  },
+  "hidden": {
+    "command": "python3 -m unittest discover -s .bench-hidden -v",
+    "format": "unittest"
+  }
+}
