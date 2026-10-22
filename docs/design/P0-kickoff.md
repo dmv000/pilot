@@ -91,3 +91,20 @@ The issue-sync hypothesis (`/kit:bug`, `/kit:sync`) assumes `gh`. Choices affect
 - A1. This folder is the kit repo, as the prompt's "To run it" note says; `git init` was run here. [assumption]
 - A2. Commits in this repo are authored as the document's byline with the account email, set repo-locally, not globally. [assumption]
 - A3. Row 13 ("Ask per phase") means: a stop at each of P0–P4, and no further permission gates within a phase except for irreversible actions. [assumption]
+
+## Answers (2026-10-22)
+
+Status: **Closed.** All rows settled; P1 may start.
+
+| Q | Decision | Consequence |
+| --- | --- | --- |
+| Q1 Kit name | **`pilot`** | Namespace is `/pilot:new`, `@agent-pilot:architect`, `pilot:direct`, `npx pilot setup`. npm / GitHub availability still to check in P1; if taken, propose alternatives before P2. |
+| Q2 AI docs | Confirmed as proposed | Product AI docs only when the product contains AI; builder behaviour in output style + rules. |
+| Q3 Quality bar | Confirmed as proposed | Tests first for logic (not pure UI); 80% coverage on changed lines; CI on GitHub Actions. |
+| Q4 i18n / a11y | Confirmed as proposed | Asked per project; defaults WCAG 2.2 AA and translation-ready text. |
+| Q5 Own failure data | **External sources first.** Read local transcripts / project git history only if external evidence yields too few failure points. | P1 starts from platform docs, engineering posts, prior-art repos and their issue trackers. Local data is a logged fallback, read-only. |
+| Q6 License / host | **MIT.** GitHub owner not given yet. | LICENSE = MIT. Ask for the GitHub user/org before anything is published (P4 at the latest). |
+| Q7 Dependencies | Decide with evidence | Depending on Superpowers or another plugin is allowed if P1 evidence favours it. |
+| Q8 `gh` CLI | Owner installs `gh` | Design issue sync around `gh`; `/pilot:doctor` checks presence and auth. |
+
+Open for later: GitHub owner for the marketplace (Q6).
