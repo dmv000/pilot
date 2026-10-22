@@ -167,6 +167,19 @@ node bench/run.mjs --all && node bench/report.mjs
 | Workflow `agent()` accepts a `model` option | First `/pilot:research-stack` and `/pilot:verify-change` runs |
 | Each benchmark task finishes in under 60 minutes | Calibration |
 
+## 7a. First run on GitHub (2026-10-22)
+
+Pushed to https://github.com/dmv000/pilot. The first kit CI run passed all 8 jobs:
+
+| Job | Windows | macOS | Linux |
+| --- | --- | --- | --- |
+| unit (all `npm test` suites) | pass | pass | pass |
+| plugin: strict validation plus install from the local marketplace (C-validate, C-install) | pass | pass | pass |
+| registry (C-registry, C-no-deps) | | | pass |
+| release-please | | | pass; no release opened, as expected (no conventional-commit release yet) |
+
+**Assumption resolved:** `claude plugin marketplace add` and `claude plugin install` work on a fresh CI machine without logging in. **Still open:** the `pilot-check` Action on `node24` runs only inside a project's CI, so it is first exercised by the first project built with pilot.
+
 ## 7b. Repository layout change (after the build)
 
 The installable plugin moved into `plugin/`. The marketplace entry now points at `./plugin`, so an install no longer downloads the tests, benchmark, reference solutions or design documents.
