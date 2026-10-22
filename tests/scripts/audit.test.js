@@ -30,7 +30,8 @@ test('classification follows the pre-registered rules', () => {
   assert.equal(classify({ check: 'T-H03, E-06' }, evals).verdict, 'fix');
   assert.equal(classify({ check: 'E-04a–c' }, evals).verdict, 'retire-candidate');
   assert.equal(classify({ check: 'T-guard' }, evals).verdict, 'enforcement');
-  assert.equal(classify({ check: 'C-budget' }, evals).verdict, 'no-evidence');
+  assert.equal(classify({ check: 'C-budget' }, evals).verdict, 'enforcement');
+  assert.equal(classify({ check: 'benchmark cost metric' }, evals).verdict, 'no-evidence');
   assert.equal(classify({ check: 'E-09' }, evals).verdict, 'no-evidence');
   assert.equal(classify({ check: 'E-01' }, null).verdict, 'no-evidence');
 });
