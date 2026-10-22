@@ -32,6 +32,8 @@ export function walk(dir, { skip = ['node_modules', '.git', '.venv', 'dist', 'bu
   return out.sort();
 }
 
-export function today() {
-  return new Date().toISOString().slice(0, 10);
+// The owner's local calendar date. toISOString() gives the UTC date, which is a day off near midnight.
+export function today(d = new Date()) {
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }

@@ -100,6 +100,25 @@ test('track-edits: docs and pilot files do not mark dirty; test runs without fix
   assert.equal(state(dir).dirty, true);
 });
 
+test('stop-gate: a TODO blocks before the first commit too, staged or not', () => {
+  // Right after /pilot:new there is no commit, so `git diff HEAD` fails; the TODO scan must still run.
+  const dir = tmpProject({ manifest: { checks: { fast: 'node -e "process.exit(0)"' } } });
+  const git = (...a) => spawnSync('git', a, { cwd: dir, encoding: 'utf8' });
+  git('init', '-q');
+  write(dir, 'src/staged.js', 'export const s = 1; // TODO zero people\n');
+  git('add', 'src/staged.js');
+  write(dir, 'src/loose.js', 'export const l = 1; // HACK rounding\n');
+  write(dir, '.pilot/state.json', '{"dirty":true}');
+  let r = stop(dir);
+  assert.equal(r.json?.decision, 'block');
+  assert.match(r.json.reason, /src\/staged\.js: .*TODO/);
+  assert.match(r.json.reason, /src\/loose\.js: .*HACK/);
+  write(dir, 'src/staged.js', 'export const s = 1; // TODO zero people (#1)\n');
+  write(dir, 'src/loose.js', 'export const l = 1;\n');
+  r = stop(dir);
+  assert.notEqual(r.json?.decision, 'block');
+});
+
 test('stop-gate: a TODO in a new untracked file blocks too', () => {
   const dir = tmpProject({ manifest: { checks: { fast: 'node -e "process.exit(0)"' } } });
   const git = (...a) => spawnSync('git', a, { cwd: dir, encoding: 'utf8' });

@@ -2,6 +2,11 @@
 
 ## 0.1.0 (unreleased)
 
+Fixes from the dummy run:
+
+- The end-of-turn check now catches a TODO or FIXME with no issue number before a project's first commit. It used to skip the scan until then.
+- Dates written into project files (handoff, manifest, logged assumptions) use the local date, not the UTC date.
+
 Architecture and scale:
 
 - The interview has a new "Architecture and scale" phase. It asks about load, peaks, team size, slow jobs and consistency, then recommends the simplest fitting style: layered, clean/hexagonal, modular monolith, microservices, event-driven or serverless.

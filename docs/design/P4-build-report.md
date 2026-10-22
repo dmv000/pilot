@@ -133,7 +133,7 @@ git clone "/mnt/c/Users/ghadi/Desktop/Master pilot" ~/pilot
 ### 6.2 Run, in this order
 
 ```bash
-cd ~/pilot && npm test                      # free; should print 57 pass
+cd ~/pilot && npm test                      # free; should print 82 pass
 node scripts/pilot.js doctor --bench --project ~/pilot   # bench prerequisites
 node bench/probes.mjs --only PR-1,PR-3,PR-4,PR-6         # small: 4 short sessions
 node bench/probes.mjs --only E-03,E-04a,E-04b,E-04c,E-08 # about 50 short sessions
@@ -214,6 +214,17 @@ The four pieces left unfinished at first build are now built and tested.
 9. **The injection scanner treats files on another Windows drive as outside the project.**
 10. **`/pilot:status` checks when the issue mirrors were last synced.** It used to have no way to know.
 11. **The helper no longer passes argument lists to a shell.** That removes a Node deprecation warning and an escaping risk.
+
+## 7d. Dummy run (2026-10-23)
+
+A pretend project ("Bill Splitter", a script with one story, one requirement, its code and a tagged test) was taken through the real `plan`, `scaffold`, `record`, `trace` and `check` commands and the real hooks. Plan, scaffold, traceability, the guards and the failing-test stop block all behaved as specified. The stop gate blocked a real rounding mistake in the dummy code (33.01 instead of 33.00).
+
+The run found two bugs:
+
+1. **The TODO check was off until a project's first commit.** The stop gate scanned TODOs only when `git diff HEAD` succeeded, and that command fails before the first commit, which is exactly the state after `/pilot:new`. Before the first commit it now scans every staged and untracked source file. Test: `tests/hooks/stop-gate.test.js`, "a TODO blocks before the first commit too".
+2. **Dates were written in UTC.** The created date in HANDOFF.md, manifest dates, and the date on logged assumptions came out a day off near midnight. They now use the local date. Test: `tests/scripts/dates.test.js` runs scaffold and ask-guard in UTC+14 and UTC-11, so a UTC date always fails one of them.
+
+Both new tests fail on the old code and pass on the fix. The kit's test run now prints 82 passing tests.
 
 ## 8. Known limits of v1
 

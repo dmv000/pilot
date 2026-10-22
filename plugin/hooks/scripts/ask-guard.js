@@ -2,7 +2,7 @@
 // and Claude is told to ask again (F13). Only relevant when askUserQuestionTimeout is set.
 import fs from 'node:fs';
 import path from 'node:path';
-import { start, emit, readText } from '../lib/project.js';
+import { start, emit, readText, today } from '../lib/project.js';
 import { UNANSWERED } from '../lib/patterns.js';
 
 const ctx = start();
@@ -17,7 +17,7 @@ const file = path.join(dir, 'docs', 'planning', 'ASSUMPTIONS.md');
 const existing = readText(file) ?? 'Purpose: every assumption made without an explicit answer from the owner.\nRead this when: you need to know what was decided without the owner.\nRelated files: docs/planning/HANDOFF.md\n';
 const ids = [...existing.matchAll(/^### A-(\d+)/gm)].map(m => Number(m[1]));
 const next = String((ids.length ? Math.max(...ids) : 0) + 1).padStart(3, '0');
-const entry = `\n### A-${next} Unanswered: ${title}\n- Question(s): ${questions.join(' | ') || '(not recorded)'}\n- What happened: the question timed out without an answer.\n- Status: open. Ask again before relying on any choice.\n- Logged: ${new Date().toISOString().slice(0, 10)} by the pilot ask-guard hook\n`;
+const entry = `\n### A-${next} Unanswered: ${title}\n- Question(s): ${questions.join(' | ') || '(not recorded)'}\n- What happened: the question timed out without an answer.\n- Status: open. Ask again before relying on any choice.\n- Logged: ${today()} by the pilot ask-guard hook\n`;
 fs.mkdirSync(path.dirname(file), { recursive: true });
 fs.writeFileSync(file, existing.replace(/\s*$/, '\n') + entry);
 

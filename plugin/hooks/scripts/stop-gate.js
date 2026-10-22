@@ -29,13 +29,15 @@ if (diff.status === 0) {
     if (line.startsWith('+++ ')) file = line.replace(/^\+\+\+ (b\/)?/, '');
     else if (line.startsWith('+') && TODO_WITHOUT_ISSUE.test(line)) todos.push(`${file}: ${line.slice(1).trim()}`);
   }
-  // New files are not in `git diff`; scan untracked (not ignored) source files too.
-  const untracked = spawnSync('git', ['ls-files', '--others', '--exclude-standard'], { cwd: dir, encoding: 'utf8' });
-  for (const file of (untracked.stdout ?? '').split('\n').filter(f => f && !/\.(md|json|lock)$/i.test(f)).slice(0, 500)) {
-    let text = '';
-    try { const st = fs.statSync(path.join(dir, file)); if (st.size > 1_000_000) continue; text = fs.readFileSync(path.join(dir, file), 'utf8'); } catch { continue; }
-    for (const line of text.split('\n')) if (TODO_WITHOUT_ISSUE.test(line)) todos.push(`${file}: ${line.trim()}`);
-  }
+}
+// New files are not in `git diff`; scan untracked (not ignored) source files too.
+// Before the first commit `git diff HEAD` fails and every file is new, so staged files are scanned as well.
+const listArgs = diff.status === 0 ? ['ls-files', '--others', '--exclude-standard'] : ['ls-files', '--cached', '--others', '--exclude-standard'];
+const newFiles = spawnSync('git', listArgs, { cwd: dir, encoding: 'utf8' });
+for (const file of (newFiles.stdout ?? '').split('\n').filter(f => f && !/\.(md|json|lock)$/i.test(f)).slice(0, 500)) {
+  let text = '';
+  try { const st = fs.statSync(path.join(dir, file)); if (st.size > 1_000_000) continue; text = fs.readFileSync(path.join(dir, file), 'utf8'); } catch { continue; }
+  for (const line of text.split('\n')) if (TODO_WITHOUT_ISSUE.test(line)) todos.push(`${file}: ${line.trim()}`);
 }
 
 // 2. Run the fast checks.

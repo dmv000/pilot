@@ -84,6 +84,12 @@ export function readText(file) {
   try { return fs.readFileSync(file, 'utf8'); } catch { return null; }
 }
 
+// The owner's local calendar date. toISOString() gives the UTC date, which is a day off near midnight.
+export function today(d = new Date()) {
+  const p = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
+}
+
 export function emit(obj) {
   process.stdout.write(JSON.stringify(obj));
 }
