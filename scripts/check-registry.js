@@ -44,7 +44,7 @@ const listed = new Set(rows.map(r => r.path));
 for (const c of components) if (!listed.has(c)) errors.push(`${c} has no row in REGISTRY.md`);
 
 // Nothing but runtime may sit in plugin/ (installs should carry only what runs).
-const allowed = new Set(['.claude-plugin', 'skills', 'agents', 'hooks', 'output-styles', 'workflows', 'scripts', 'templates', 'evals', 'package.json', 'README.md', 'LICENSE']);
+const allowed = new Set(['.claude-plugin', 'skills', 'agents', 'hooks', 'output-styles', 'workflows', 'scripts', 'templates', 'evals', 'migrations', 'package.json', 'README.md', 'LICENSE']);
 for (const e of fs.readdirSync(PLUGIN)) if (!allowed.has(e)) errors.push(`plugin/${e} is not a runtime part; keep it in the repository root`);
 
 // Check IDs on built rows must be defined somewhere.

@@ -87,4 +87,6 @@ All rows: added 2026-10-22, designed by Claude Opus 5.5, tuned for the `pro` pro
 | MNT-06 | `plugin/scripts/pilot.js` | Helper CLI for deterministic work: plan, scaffold, record, trace, check, sync, review, preview, profile, doctor | F01, F09, F20, R8 | `tests/scripts/pilot-cli.test.js` | built | — |
 | MNT-07 | `plugin/scripts/lib/` | Shared code for the CLI and the pilot-check Action (trace, sync, scaffold, schema, preview) | F03, F09 | `tests/scripts/pilot-cli.test.js` | built | — |
 | MNT-08 | `release-please-config.json` | Bumps plugin.json and package.json versions on release | F10 | C-release | built | — |
-| MNT-05 | `migrations/` | Upgrade project files between template versions | F09 | golden upgrade tests | planned (ships with template v2) | — |
+| MNT-05 | `plugin/migrations/` | Migration files, one per template version change (none yet: v1 is current) | F09 | C-migrate (`tests/scripts/migrate.test.js`) | built | — |
+| SKL-11 | `plugin/skills/migrate/` | Upgrade project files after a kit update: automatic for untouched files, approval for edited ones, backups, no deletes | F09, R2 | C-migrate (`tests/scripts/migrate.test.js`) | built | Claude Code gains a native, tested plugin-template migration |
+| MNT-10 | `plugin/scripts/lib/migrate.js` | Migration runner: plan, line diffs, apply, chain, idempotency | F09 | C-migrate | built | — |

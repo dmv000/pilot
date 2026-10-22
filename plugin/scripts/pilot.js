@@ -11,6 +11,7 @@ import { collect, buildTraceability, runAll } from './lib/trace.js';
 import { buildMirrors, prunePending } from './lib/sync.js';
 import { renderPreview } from './lib/preview.js';
 import { checkDesign } from './lib/design.js';
+import { loadMigrations, latestVersion, planMigration, applyMigration } from './lib/migrate.js';
 
 const [cmd, ...rest] = process.argv.slice(2);
 const opts = { _: [] };
@@ -140,6 +141,33 @@ const commands = {
     process.exit(r.errors.length ? 1 : 0);
   },
 
+  // Upgrade project files to the kit's newest template version. --plan shows; --apply writes.
+  async migrate() {
+    const migrations = await loadMigrations(opts.migrations ? path.resolve(opts.migrations) : path.join(KIT_ROOT, 'migrations'));
+    if (!exists(path.join(project, '.pilot/manifest.json'))) fail('no .pilot/manifest.json; this is not a pilot project');
+    const plan = planMigration(project, migrations, { to: opts.to });
+    const planFile = path.join(project, '.pilot', 'tmp', 'migration-plan.json');
+    if (plan.upToDate) { out(`Templates are up to date (${plan.from}).`); return; }
+    if (!opts.apply) {
+      writeFile(planFile, JSON.stringify(plan, null, 2) + '\n');
+      if (opts.json) { out(plan); return; }
+      const headings = { auto: 'Updated automatically (you never edited these)', create: 'New files', approval: 'Need your approval (you edited these; diffs below)', unchanged: 'Already up to date' };
+      out(`Template ${plan.from} → ${plan.to}`);
+      for (const s of plan.steps) out(`  ${s.from} → ${s.to}: ${s.describe ?? ''}`);
+      for (const kind of ['auto', 'create', 'approval', 'unchanged']) {
+        const group = plan.files.filter(f => f.status === kind);
+        if (!group.length) continue;
+        out(`\n${headings[kind]}:`);
+        for (const f of group) out(`  ${f.path}${f.reason ? `  (${f.reason})` : ''}`);
+      }
+      for (const f of plan.files.filter(f => f.status === 'approval')) out(`\n${f.diff}`);
+      out('\nPlan saved to .pilot/tmp/migration-plan.json. Apply with: pilot.js migrate --apply [--approve <path,path|all>]');
+      return;
+    }
+    const approve = typeof opts.approve === 'string' ? opts.approve.split(',').map(s => s.trim()).filter(Boolean) : [];
+    out(applyMigration(project, plan, { approve }));
+  },
+
   // Switch the model profile in the manifest and project settings.
   profile() {
     const target = opts._[0];
@@ -155,7 +183,7 @@ const commands = {
     out({ profile: target, model: settings.model });
   },
 
-  doctor() {
+  async doctor() {
     const rows = [];
     const add = (name, ok, detail, fix = '') => rows.push({ name, ok, detail, fix });
     const ver = (bin, args = ['--version']) => { const r = spawnSync(bin, args, { encoding: 'utf8', shell: process.platform === 'win32' }); return r.status === 0 ? (r.stdout || r.stderr).trim().split('\n')[0] : null; };
@@ -178,7 +206,9 @@ const commands = {
       add('manifest valid', errs.length === 0, errs[0] ?? `kit ${manifest.kitVersion}, template ${manifest.templateVersion}, profile ${manifest.profile}`, 'fix the field named, or rerun /pilot:doctor after /pilot:new');
       const missing = Object.keys(manifest.files ?? {}).filter(f => !exists(path.join(project, f)));
       add('generated files present', missing.length === 0, missing.length ? `missing: ${missing.slice(0, 5).join(', ')}` : `${Object.keys(manifest.files ?? {}).length} files`);
-      add('kit version', manifest.kitVersion === KIT_VERSION, `project made with ${manifest.kitVersion}, installed ${KIT_VERSION}`, 'a newer kit may need /pilot:migrate (when available)');
+      add('kit version', manifest.kitVersion === KIT_VERSION, `project last updated with ${manifest.kitVersion}, installed ${KIT_VERSION}`, 'run /pilot:migrate to bring project files up to date');
+      const latest = latestVersion(await loadMigrations(path.join(KIT_ROOT, 'migrations')));
+      add('templates up to date', manifest.templateVersion === latest, `project ${manifest.templateVersion}, kit ${latest}`, 'run /pilot:migrate');
       add('checks.fast configured', !!manifest.checks?.fast, manifest.checks?.fast ?? 'not set', 'set checks.fast in .pilot/manifest.json');
       // Hook smoke test: guard-files must deny an edit to .env in this project.
       const hook = spawnSync(process.execPath, [path.join(KIT_ROOT, 'hooks/scripts/guard-files.js')], {
@@ -205,7 +235,7 @@ const commands = {
 };
 
 if (!cmd || !commands[cmd]) {
-  out('usage: pilot.js <version|plan|scaffold|record|trace|check|sync|review|preview|design-init|design-check|profile|doctor> [--project <dir>] [options]');
+  out('usage: pilot.js <version|plan|scaffold|record|trace|check|sync|review|preview|design-init|design-check|migrate|profile|doctor> [--project <dir>] [options]');
   process.exit(cmd ? 1 : 0);
 }
-commands[cmd]();
+await commands[cmd]();
