@@ -186,7 +186,8 @@ const commands = {
   async doctor() {
     const rows = [];
     const add = (name, ok, detail, fix = '') => rows.push({ name, ok, detail, fix });
-    const ver = (bin, args = ['--version']) => { const r = spawnSync(bin, args, { encoding: 'utf8', shell: process.platform === 'win32' }); return r.status === 0 ? (r.stdout || r.stderr).trim().split('\n')[0] : null; };
+    // One command string with a shell: finds .cmd shims on Windows without passing an args array to a shell.
+    const ver = (bin, flag = '--version') => { const r = spawnSync(`${bin} ${flag}`, { encoding: 'utf8', shell: true }); return r.status === 0 ? (r.stdout || r.stderr).trim().split('\n')[0] : null; };
     const num = s => (s?.match(/(\d+)\.(\d+)\.(\d+)/) ?? []).slice(1).map(Number);
     const atLeast = (v, min) => { const a = num(v); if (!a.length) return false; for (let i = 0; i < 3; i++) { if (a[i] !== min[i]) return a[i] > min[i]; } return true; };
 
@@ -196,7 +197,7 @@ const commands = {
     const git = ver('git');
     add('git >= 2.31', atLeast(git, [2, 31, 0]), git ?? 'not found', 'install git');
     const gh = ver('gh');
-    const ghAuth = gh ? spawnSync('gh', ['auth', 'status'], { encoding: 'utf8', shell: process.platform === 'win32' }).status === 0 : false;
+    const ghAuth = gh ? spawnSync('gh auth status', { encoding: 'utf8', shell: true }).status === 0 : false;
     add('gh installed and logged in', !!gh && ghAuth, gh ? (ghAuth ? gh : `${gh}, not logged in`) : 'not found', gh ? 'gh auth login' : 'install GitHub CLI: https://cli.github.com');
 
     const manifest = loadJson(path.join(project, '.pilot/manifest.json'));
@@ -224,7 +225,7 @@ const commands = {
     const ci = read(path.join(project, '.github/workflows/ci.yml'));
     add('CI calls pilot-check', !!ci && /pilot-check/.test(ci), ci ? (/OWNER\//.test(ci) ? 'present, but the action owner is still the OWNER placeholder' : 'present') : 'no .github/workflows/ci.yml', 'replace OWNER in ci.yml with the GitHub owner of the pilot repo');
     if (opts.bench) {
-      for (const bin of ['bwrap', 'socat']) add(`bench: ${bin}`, !!ver(bin, ['--version']), ver(bin, ['--version']) ?? 'not found', 'sudo apt-get install bubblewrap socat (inside WSL2)');
+      for (const [bin, flag] of [['bwrap', '--version'], ['socat', '-V']]) add(`bench: ${bin}`, !!ver(bin, flag), ver(bin, flag) ?? 'not found', 'sudo apt-get install bubblewrap socat (inside WSL2)');
       const tokenFile = path.join(process.env.HOME ?? '', '.config/pilot-bench/token');
       add('bench: login token file', exists(tokenFile), tokenFile, 'claude setup-token, then save it to that file with chmod 600');
     }

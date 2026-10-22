@@ -89,4 +89,7 @@ All rows: added 2026-10-22, designed by Claude Opus 5.5, tuned for the `pro` pro
 | MNT-08 | `release-please-config.json` | Bumps plugin.json and package.json versions on release | F10 | C-release | built | — |
 | MNT-05 | `plugin/migrations/` | Migration files, one per template version change (none yet: v1 is current) | F09 | C-migrate (`tests/scripts/migrate.test.js`) | built | — |
 | SKL-11 | `plugin/skills/migrate/` | Upgrade project files after a kit update: automatic for untouched files, approval for edited ones, backups, no deletes | F09, R2 | C-migrate (`tests/scripts/migrate.test.js`) | built | Claude Code gains a native, tested plugin-template migration |
+| SKL-12 | `plugin/skills/audit/` | Maintainer tool: re-check every component with the current model and Claude Code; propose keep, fix, merge or retire with evidence | R6 | T-audit (`tests/scripts/audit.test.js`) | built | — |
 | MNT-10 | `plugin/scripts/lib/migrate.js` | Migration runner: plan, line diffs, apply, chain, idempotency | F09 | C-migrate | built | — |
+| MNT-11 | `scripts/audit.js` | Audit evidence: applies the pre-registered rules to REGISTRY rows and eval history; writes the audit history | R6 | T-audit | built | — |
+| MNT-12 | `scripts/record-evals.js` | Appends each eval run's summary to docs/audits/eval-history.jsonl (used by audit and the release rule) | R6, F10 | T-audit | built | — |
