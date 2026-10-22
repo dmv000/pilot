@@ -11,7 +11,7 @@ Status: **Build complete; measurement not started.** Written 2026-10-22. Everyth
 ## Questions for the owner
 
 1. **WSL2 setup.** The evals, probes and benchmark need Linux, because Claude Code's sandbox does not exist on native Windows. Setting up WSL2 needs an admin install and a reboot, so you have to do it. The steps are in section 6.
-2. **GitHub owner** for publishing. Still open. Until it is set, the README and the project CI template contain the placeholder `OWNER`.
+2. **GitHub owner:** `dmv000` (answered 2026-10-22). The repository is `dmv000/pilot`.
 
 ---
 
@@ -149,7 +149,7 @@ node bench/run.mjs --all && node bench/report.mjs
 
 ### 6.3 Publish (after the benchmark, and only with your go-ahead)
 
-1. Create the GitHub repo, then replace `OWNER` in README.md and `scripts/lib/scaffold.js` (`PILOT_ACTION_REF`).
+1. Create the public GitHub repo `dmv000/pilot`. README, plugin.json, marketplace.json and the project CI template already point at it.
 2. Push, and let kit CI run on Windows, macOS and Linux.
 3. Tag with `claude plugin tag --push`. Version 0.1.0 stays marked pre-release until the benchmark passes.
 

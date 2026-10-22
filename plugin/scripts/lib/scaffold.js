@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { KIT_ROOT, KIT_VERSION, read, exists, writeFile, sha256, today, walk } from './fsutil.js';
 
-export const PILOT_ACTION_REF = 'OWNER/pilot/.github/actions/pilot-check@main';
+// Projects call the pilot-check Action from the kit repo. After the first tagged release, pin a full commit SHA instead of @main.
+export const PILOT_ACTION_REF = 'dmv000/pilot/.github/actions/pilot-check@main';
 const T = (...p) => path.join(KIT_ROOT, 'templates', ...p);
 
 export const DEFAULT_CHECKS = {

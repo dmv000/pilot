@@ -16,10 +16,10 @@ Status: **0.1.0, pre-release.** The benchmark against plain Claude Code has not 
 Requirements: Claude Code 2.1.295 or later, Node.js 20+ on your PATH, git, and the GitHub CLI (`gh`) logged in.
 
 ```bash
-claude plugin install pilot --marketplace OWNER/pilot
+claude plugin install pilot --marketplace dmv000/pilot
 ```
 
-Replace `OWNER` with the GitHub owner of this repository. Update later with:
+Or, inside a Claude Code session: `/plugin install pilot --marketplace dmv000/pilot`. Update later with:
 
 ```bash
 claude plugin update pilot@pilot

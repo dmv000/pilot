@@ -44,12 +44,15 @@ test('hooks.json: edit and shell guards fail closed; the read guard and the rest
   for (const ev of ['SessionStart', 'PostToolUse', 'Stop']) for (const g of h[ev]) for (const x of g.hooks) assert.equal(x.onFailure, undefined, ev);
 });
 
-test('scaffold without a profile defaults to pro; doctor fails CI that still names OWNER', () => {
+test('scaffold without a profile defaults to pro; CI points at the real pilot-check; doctor still catches an OWNER placeholder', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'pilot-golden-noprofile-'));
   const answers = path.join(os.tmpdir(), `answers-${path.basename(dir)}.json`);
   fs.writeFileSync(answers, JSON.stringify({ project_name: 'NoProfile', projectType: 'web-app', stack: 'web-ts', hasAI: false, design: 'pending' }));
   assert.equal(runPilot(['scaffold', '--project', dir, '--answers', answers]).code, 0);
   assert.equal(JSON.parse(fs.readFileSync(path.join(dir, '.claude/settings.json'), 'utf8')).model, 'opusplan');
-  const doc = runPilot(['doctor', '--project', dir]);
-  assert.match(doc.stdout, /FAIL\s+CI calls pilot-check: present, but the action owner is still the OWNER placeholder/);
+  const ci = path.join(dir, '.github/workflows/ci.yml');
+  assert.match(fs.readFileSync(ci, 'utf8'), /uses: dmv000\/pilot\/\.github\/actions\/pilot-check@/);
+  assert.match(runPilot(['doctor', '--project', dir]).stdout, /PASS\s+CI calls pilot-check: present/);
+  fs.writeFileSync(ci, fs.readFileSync(ci, 'utf8').replace('dmv000/pilot', 'OWNER/pilot'));
+  assert.match(runPilot(['doctor', '--project', dir]).stdout, /FAIL\s+CI calls pilot-check: present, but the action owner is still the OWNER placeholder/);
 });

@@ -4,7 +4,9 @@
   "displayName": "pilot",
   "version": "0.1.0",
   "description": "Project lifecycle kit for Claude Code: interview, traceable specs, tests-first build loop, enforced quality gates, safe updates.",
-  "author": { "name": "Dms Db" },
+  "author": { "name": "Dms Db", "url": "https://github.com/dmv000" },
+  "homepage": "https://github.com/dmv000/pilot",
+  "repository": "https://github.com/dmv000/pilot",
   "license": "MIT",
   "keywords": ["spec-driven", "tdd", "quality-gates", "project-setup", "hooks"]
 }
