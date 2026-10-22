@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: E-12-reviewer-stays-in-scope
+context:
+  scaffold_script: fixture.sh
