@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { start, relPath, matchesAny, readText, decide, isImplementer } from '../lib/project.js';
 import {
-  DEFAULT_PROTECTED, PROTECTED_EXCEPTIONS, DEFAULT_ACCEPTANCE, GATE_CONFIG,
+  DEFAULT_PROTECTED, PROTECTED_EXCEPTIONS, DEFAULT_ACCEPTANCE, GATE_CONFIG, SECRET_GLOBS,
   SKIP_PATTERNS, SKIP_ALLOW, TEST_CONFIG, TEST_EXCLUSION
 } from '../lib/patterns.js';
 
@@ -24,6 +24,15 @@ let after = '';
 if (input.tool_name === 'Write') { before = current; after = ti.content ?? ''; }
 else if (input.tool_name === 'Edit') { before = ti.old_string ?? ''; after = ti.new_string ?? ''; }
 else { before = ''; after = ti.new_source ?? ''; }
+
+// 0. Reading secret files (F06). Project deny rules do the same, but they only apply once the
+// project settings load and the folder is trusted; this works everywhere pilot is active.
+if (input.tool_name === 'Read') {
+  if (matchesAny(rel, SECRET_GLOBS) && !matchesAny(rel, PROTECTED_EXCEPTIONS)) {
+    decide('deny', `pilot: ${rel} holds secrets. Reading it would copy them into the plain-text transcript. Ask the user to check the value themselves.`);
+  }
+  process.exit(0);
+}
 
 // 1. Protected paths.
 const protectedGlobs = [...DEFAULT_PROTECTED, ...(manifest.protectedPaths ?? [])];

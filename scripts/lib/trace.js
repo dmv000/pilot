@@ -83,7 +83,9 @@ export function checkIds(c) {
     for (const f of where) if (OWNER[prefix] && f !== OWNER[prefix]) errors.push(`${id} is defined in ${f}; it belongs in ${OWNER[prefix]}.`);
   }
   for (const [file, text] of Object.entries(c.docText)) {
-    for (const m of text.matchAll(REF_RE)) {
+    // IDs inside code spans or fenced blocks are examples, not references.
+    const prose = text.replace(/```[\s\S]*?```/g, '').replace(/`[^`\n]*`/g, '');
+    for (const m of prose.matchAll(REF_RE)) {
       const id = `${m[1]}-${m[2]}`;
       if (!c.defs[id]) errors.push(`${file} refers to ${id}, which is not defined anywhere.`);
     }

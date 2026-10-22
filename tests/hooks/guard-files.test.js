@@ -28,6 +28,17 @@ test('review and state files are protected; gate config asks main, denies subage
   assert.equal(decision(writeFile(dir, '.claude/settings.json', '{}')), 'ask');
 });
 
+test('reading secret files is blocked; other reads are allowed', () => {
+  const dir = tmpProject();
+  const read = rel => decision(runHook('guard-files.js', dir, { hook_event_name: 'PreToolUse', tool_name: 'Read', tool_input: { file_path: abs(dir, rel) } }));
+  assert.equal(read('.env'), 'deny');
+  assert.equal(read('config/.env.production'), 'deny');
+  assert.equal(read('certs/server.pem'), 'deny');
+  assert.equal(read('.env.example'), 'allow');
+  assert.equal(read('package-lock.json'), 'allow');
+  assert.equal(read('src/app.ts'), 'allow');
+});
+
 test('handles Windows backslash paths', () => {
   const dir = tmpProject();
   const winPath = abs(dir, '.env').replace(/\//g, '\\');

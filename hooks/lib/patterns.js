@@ -15,7 +15,9 @@ export const GATE_CONFIG = ['.pilot/manifest.json', '.claude/settings.json', '.c
 
 // Shell writes into pilot's evidence and config files.
 export const SHELL_WRITES_PILOT = /(?:>{1,2}|\btee\b|\bcp\b|\bmv\b|\bcopy\b|\bmove\b|Set-Content|Add-Content|Out-File|\bsed\s+-i)[^;&|\n]*\.pilot[\\/](?:reviews|state\.json|manifest\.json)/i;
-export const PROTECTED_EXCEPTIONS = ['.env.example', '**/.env.example', '.env.sample', '**/.env.sample'];
+// Files whose contents must never enter the transcript (Read is blocked too).
+export const SECRET_GLOBS = ['.env', '.env.*', '**/.env', '**/.env.*', '**/*.pem', '**/id_rsa*', '**/id_ed25519*', '**/.netrc', '**/credentials.json', '**/.credentials.json'];
+export const PROTECTED_EXCEPTIONS =['.env.example', '**/.env.example', '.env.sample', '**/.env.sample'];
 
 export const DEFAULT_ACCEPTANCE = ['tests/acceptance/**'];
 

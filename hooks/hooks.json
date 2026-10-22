@@ -11,7 +11,7 @@
     ],
     "PreToolUse": [
       {
-        "matcher": "Edit|Write|NotebookEdit",
+        "matcher": "Edit|Write|NotebookEdit|Read",
         "hooks": [
           { "type": "command", "command": "node", "args": ["${CLAUDE_PLUGIN_ROOT}/hooks/scripts/guard-files.js"], "timeout": 30, "onFailure": "block" }
         ]
