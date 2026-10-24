@@ -3,6 +3,7 @@
 //
 //   node bench/run.mjs --calibrate                 B-3 once per arm (2 runs), then report the projection
 //   node bench/run.mjs --all [--runs 3]            every task x arm x run, interleaved; skips runs already recorded
+//   node bench/run.mjs --all --arms pilot-saver    the same for other arms (pilot-saver: the saver model profile)
 //   node bench/run.mjs --task B-1 --arm pilot --run 1
 //   node bench/run.mjs --dry --task B-1 --arm pilot  build the workspace only, print its path
 //
@@ -15,7 +16,7 @@ import { BENCH, PLUGIN, loadTask, buildWorkspace, prompts, renderSpec } from './
 import { verify as verifyHidden } from './lib/hashes.mjs';
 
 const TASK_IDS = ['B-1', 'B-2', 'B-3', 'B-4', 'B-5'];
-const ARMS = ['vanilla', 'pilot'];
+const ALL_ARMS = ['vanilla', 'pilot', 'pilot-saver'];
 const RESULTS = path.join(BENCH, 'results', 'runs.jsonl');
 const WORK = path.join(BENCH, '.work');
 const MODEL_PINS = { ANTHROPIC_DEFAULT_OPUS_MODEL: 'claude-opus-5-5', ANTHROPIC_DEFAULT_SONNET_MODEL: 'claude-sonnet-5-5', ANTHROPIC_DEFAULT_HAIKU_MODEL: 'claude-haiku-5-5' };
@@ -23,6 +24,9 @@ const RUN_TIMEOUT_MS = 90 * 60 * 1000;
 
 const argv = process.argv.slice(2);
 const opt = (name, def) => { const i = argv.indexOf(`--${name}`); return i < 0 ? def : (argv[i + 1] && !argv[i + 1].startsWith('--') ? argv[i + 1] : true); };
+// The pre-registered comparison is vanilla vs pilot; pilot-saver runs only when named with --arms.
+const ARMS = String(opt('arms', 'vanilla,pilot')).split(',').map(s => s.trim());
+for (const a of ARMS) if (!ALL_ARMS.includes(a)) { console.error(`[bench] unknown arm ${a}; known: ${ALL_ARMS.join(', ')}`); process.exit(1); }
 
 function token() {
   const f = path.join(os.homedir(), '.config', 'pilot-bench', 'token');
@@ -147,7 +151,7 @@ async function runOne(taskId, arm, runNo) {
 
   const args = ['-p', prompts[arm], '--output-format', 'json', '--max-turns', '200', '--no-session-persistence',
     '--setting-sources', 'project,local', '--settings', runSettings()];
-  if (arm === 'pilot') args.push('--plugin-dir', pluginDist());
+  if (arm.startsWith('pilot')) args.push('--plugin-dir', pluginDist());
 
   let res;
   for (let attempt = 1; attempt <= 12; attempt++) {

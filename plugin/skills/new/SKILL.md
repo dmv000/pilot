@@ -42,13 +42,13 @@ Save the answers to `.pilot/tmp/interview.json`:
 
 ```json
 { "project_name": "", "projectType": "web-app|mobile-app|script|os|ai-system|other", "stack": "web-ts|generic",
-  "stack_summary": "", "profile": "pro|max", "hasAI": false, "design": "pending|not-applicable",
+  "stack_summary": "", "profile": "pro|max|saver", "hasAI": false, "design": "pending|not-applicable",
   "issues": "github|local", "checks": { "fast": "", "full": "", "acceptance": "" }, "autonomy": "", "assumptions": [] }
 ```
 
 - `stack` is `web-ts` only for TypeScript/JavaScript web projects; everything else is `generic`, with `checks` filled from the owner's answers.
 - `issues` is the owner's Phase 12 answer: `github` (GitHub Issues through gh) or `local` (files in docs/issues/ only).
-- `profile` is `pro` unless the owner said they are on Max.
+- `profile` is `pro` unless the owner said they are on Max, or chose the saver setting.
 
 Then show what will be created:
 

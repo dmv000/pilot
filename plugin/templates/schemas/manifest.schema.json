@@ -9,7 +9,7 @@
     "schemaVersion": { "type": "integer", "minimum": 1 },
     "kitVersion": { "type": "string", "pattern": "^[0-9]+[.][0-9]+[.][0-9]+" },
     "templateVersion": { "type": "string", "pattern": "^v[0-9]+$" },
-    "profile": { "enum": ["pro", "max"] },
+    "profile": { "enum": ["pro", "max", "saver"] },
     "projectType": { "enum": ["web-app", "mobile-app", "script", "os", "ai-system", "other"] },
     "stack": { "type": "string" },
     "hasAI": { "type": "boolean" },

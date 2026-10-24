@@ -73,10 +73,11 @@ export function buildWorkspace(taskId, arm, dir, { install = true } = {}) {
 
   if (arm === 'vanilla') {
     write(dir, 'SPEC.md', renderSpec(t));
-  } else if (arm === 'pilot') {
+  } else if (arm === 'pilot' || arm === 'pilot-saver') {
+    // pilot-saver is the same kit with the saver model profile; it runs only when asked for (--arms).
     const answers = path.join(dir, '..', `${path.basename(dir)}-answers.json`);
     fs.writeFileSync(answers, JSON.stringify({
-      project_name: t.title, projectType: t.projectType, stack: t.stack, profile: 'pro', hasAI: t.hasAI,
+      project_name: t.title, projectType: t.projectType, stack: t.stack, profile: arm === 'pilot-saver' ? 'saver' : 'pro', hasAI: t.hasAI,
       design: 'not-applicable', checks: t.checks, stack_summary: t.stack === 'web-ts' ? 'Node.js 24, TypeScript (type stripping), node:test' : 'Python 3.11+, standard library, unittest'
     }));
     run(process.execPath, [path.join(PLUGIN, 'scripts', 'pilot.js'), 'scaffold', '--project', dir, '--answers', answers], dir);
@@ -98,3 +99,4 @@ export const prompts = {
   vanilla: 'Implement everything in SPEC.md. Work until it is complete.',
   pilot: 'Run /pilot:step for each step in docs/planning/ROADMAP.md, in order, until all steps are done.'
 };
+prompts['pilot-saver'] = prompts.pilot;

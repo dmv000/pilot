@@ -2,6 +2,12 @@
 
 ## 0.1.0 (unreleased)
 
+Experiment branch `experiment/todo` (from the owner's ToDo list; not merged into main):
+
+- gh is optional. A project can keep bugs and blockers as files in `docs/issues/` ("issues": "local"); `/pilot:new` picks this when gh is not logged in, and `/pilot:sync` can move them to GitHub later. Doctor shows gh as WARN, never FAIL.
+- Architecture: `big-systems.md` (how Meta, Instagram, WhatsApp, YouTube, Netflix, X, Discord, Telegram, Uber, Amazon and Shopify are built, with the patterns each uses and a source) and `patterns.md` (the 22 classic code patterns and 27 system patterns).
+- Fewer tokens: `/pilot:debug` (at most 3 focused attempts, then stop and record); the end-of-turn check stops Claude after 3 failed fix attempts instead of looping; failure output is trimmed of colors, runtime stack frames and repeats; a `saver` model profile (Sonnet, with Haiku for search), on trial until the benchmark's optional `pilot-saver` arm compares it with `pro`.
+
 Fixes from the dummy run:
 
 - The end-of-turn check now catches a TODO or FIXME with no issue number before a project's first commit. It used to skip the scan until then.

@@ -38,20 +38,21 @@ Auto-update is off by default, so you choose when the kit's code changes. Read t
 | `/pilot:new` | Interviews you in depth, then creates the PRD, SRS, Tech Spec, roadmap, test strategy, security notes, project settings and CI |
 | `/pilot:adopt` | Same, for a project that already has code: maps it first, then asks only about the gaps |
 | `/pilot:step <n>` | Builds one roadmap step: acceptance tests, implementation, review, progress update |
+| `/pilot:debug` | Fixes a failing test or bug in at most 3 focused attempts, then stops and records what was tried |
 | `/pilot:status` | Progress, open bugs and problems, reminders |
 | `/pilot:bug`, `/pilot:problem` | Files a GitHub Issue (you approve each one) and updates the local mirror, or records it in `docs/issues/` when the project keeps issues locally |
 | `/pilot:sync` | Rebuilds the local mirrors of GitHub Issues, or moves locally kept issues to GitHub |
 | `/pilot:handoff` | Writes the state for the next session |
 | `/pilot:design` | Creates the design system from the kit's templates: rules in DESIGN.md, values in tokens.json (contrast-checked), a generated preview page |
 | `/pilot:migrate` | After a kit update, upgrades the project's pilot files: automatic for files you never edited, your approval for the rest, with backups |
-| `/pilot:doctor` | Checks the install and the project, and switches the model profile (`/pilot:doctor profile max`) |
+| `/pilot:doctor` | Checks the install and the project, and switches the model profile: `pro` (default), `max`, or `saver` (cheapest, on trial), for example `/pilot:doctor profile saver` |
 | `/pilot:audit` | For maintainers of this repo: re-checks every kit part against evidence after a new model or Claude Code release |
 
 ## What pilot enforces
 
 These are enforced by hooks, permissions or CI, not just written as advice:
 
-- A turn that changed code cannot end while the project's fast checks fail.
+- A turn that changed code cannot end while the project's fast checks fail. After 3 failed fix attempts Claude stops instead of looping, and the work is reported as not verified.
 - Acceptance tests come from the spec. The implementing agent cannot edit them, and new test skips need a linked issue.
 - A roadmap step is marked done only when a recorded run of the acceptance tests passed and the review passed.
 - Secret files (`.env`, keys) cannot be read or printed. Protected files such as lockfiles cannot be edited.

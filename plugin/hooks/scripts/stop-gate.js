@@ -7,6 +7,10 @@ import crypto from 'node:crypto';
 import { start, emit } from '../lib/project.js';
 import { readState, updateState } from '../lib/state.js';
 import { TODO_WITHOUT_ISSUE } from '../lib/patterns.js';
+import { trimFailure } from '../lib/output.js';
+
+// After the first "done" is blocked, Claude gets this many fix attempts; then it stops (owner's choice, to cap token use).
+const MAX_FIX_ATTEMPTS = 3;
 
 const ctx = start();
 if (!ctx) process.exit(0);
@@ -53,19 +57,26 @@ if (passed && todos.length === 0) {
 
 const lines = [];
 if (!passed) {
-  const tail = output.split('\n').slice(-40).join('\n');
-  lines.push(`The fast checks failed${timedOut ? ' (timed out after 300 s)' : ` (exit ${run.status})`}: \`${fast}\``, tail);
+  lines.push(`The fast checks failed${timedOut ? ' (timed out after 300 s)' : ` (exit ${run.status})`}: \`${fast}\``, trimFailure(output));
 }
 if (todos.length) lines.push('New TODO/FIXME without an issue reference. Add "(#<issue>)" or file one with /pilot:bug:', ...todos.slice(0, 10));
 const reason = ('pilot: this turn changed code and is not done yet.\n' + lines.join('\n')).slice(0, 3000);
 
 const hash = crypto.createHash('sha256').update(lines.join('\n')).digest('hex').slice(0, 16);
 const prev = state.stopFailures;
+// Blocks in a row while Claude keeps going because of this hook: the first "done", then one per fix attempt.
+const blocks = input.stop_hook_active && prev ? (prev.blocks ?? 1) + 1 : 1;
+const next = { hash, count: prev && prev.hash === hash ? prev.count + 1 : 1, blocks };
 if (input.stop_hook_active && prev && prev.hash === hash && prev.count >= 1) {
-  updateState(dir, { stopFailures: { hash, count: prev.count + 1 } });
+  updateState(dir, { stopFailures: next });
   emit({ systemMessage: `pilot: the fast checks still fail after a retry with no change in the failure. Claude was allowed to stop, but this work is NOT verified.\n${reason}` });
   process.exit(0);
 }
-updateState(dir, { stopFailures: { hash, count: prev && prev.hash === hash ? prev.count + 1 : 1 } });
+if (blocks > MAX_FIX_ATTEMPTS) {
+  updateState(dir, { stopFailures: next });
+  emit({ systemMessage: `pilot: ${MAX_FIX_ATTEMPTS} fix attempts did not make the checks pass, so Claude was stopped to save tokens. This work is NOT verified.\n${reason}\nNext: /pilot:debug for a step-by-step attempt, or /pilot:bug to record it.` });
+  process.exit(0);
+}
+updateState(dir, { stopFailures: next });
 emit({ decision: 'block', reason });
 process.exit(0);

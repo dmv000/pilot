@@ -6,12 +6,13 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { KIT_ROOT, KIT_VERSION, read, exists, writeFile, today } from './lib/fsutil.js';
 import { validate } from './lib/schema.js';
-import { plan, apply, record } from './lib/scaffold.js';
+import { plan, apply, record, PROFILES, PROFILE_MODELS } from './lib/scaffold.js';
 import { collect, buildTraceability, runAll } from './lib/trace.js';
 import { buildMirrors, prunePending } from './lib/sync.js';
 import { renderPreview } from './lib/preview.js';
 import { checkDesign } from './lib/design.js';
 import { loadMigrations, latestVersion, planMigration, applyMigration } from './lib/migrate.js';
+import { trimFailure } from '../hooks/lib/output.js';
 
 const [cmd, ...rest] = process.argv.slice(2);
 const opts = { _: [] };
@@ -109,7 +110,7 @@ const commands = {
     if (errs.length) fail('review verdict is invalid:\n' + errs.join('\n'));
     writeFile(path.join(project, '.pilot', 'reviews', `step-${step}.json`), JSON.stringify(review, null, 2) + '\n');
     out({ step, acceptanceExitCode: review.acceptance.exitCode, verdict: review.verdict, canMarkDone: review.acceptance.exitCode === 0 && review.verdict === 'pass' });
-    if (review.acceptance.exitCode !== 0) out(String(run.stdout + '\n' + run.stderr).trim().split('\n').slice(-40).join('\n'));
+    if (review.acceptance.exitCode !== 0) out(trimFailure(`${run.stdout}\n${run.stderr}`));
   },
 
   preview() {
@@ -178,14 +179,14 @@ const commands = {
   // Switch the model profile in the manifest and project settings.
   profile() {
     const target = opts._[0];
-    if (!['pro', 'max'].includes(target)) fail('usage: profile pro|max');
+    if (!PROFILES.includes(target)) fail(`usage: profile ${PROFILES.join('|')}`);
     const mf = path.join(project, '.pilot/manifest.json');
     const manifest = loadJson(mf) ?? fail('no .pilot/manifest.json');
     manifest.profile = target;
     writeFile(mf, JSON.stringify(manifest, null, 2) + '\n');
     const sf = path.join(project, '.claude/settings.json');
     const settings = loadJson(sf) ?? {};
-    settings.model = target === 'max' ? 'opus' : 'opusplan';
+    settings.model = PROFILE_MODELS[target];
     writeFile(sf, JSON.stringify(settings, null, 2) + '\n');
     out({ profile: target, model: settings.model });
   },

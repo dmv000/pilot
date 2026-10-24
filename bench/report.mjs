@@ -61,5 +61,18 @@ const lines = [
   ...tasks.filter(t => mean(by('pilot', t).map(defects)) > mean(by('vanilla', t).map(defects))).map(t => `- ${t}: pilot mean defects ${mean(by('pilot', t).map(defects)).toFixed(2)} vs vanilla ${mean(by('vanilla', t).map(defects)).toFixed(2)}. Read the final messages and hidden-test tails in runs.jsonl.`),
   ''
 ];
+
+// Saver profile trial (not part of the pre-registered verdict). saver may become the default
+// only if it has no more defects than pilot (pro) and costs less.
+const s = by('pilot-saver');
+if (s.length) {
+  const tokens = arm => mean(by(arm).map(r => Object.values(r.modelUsage ?? {}).reduce((n, u) => n + (u.inputTokens ?? 0) + (u.outputTokens ?? 0) + (u.cacheReadInputTokens ?? 0) + (u.cacheCreationInputTokens ?? 0), 0)));
+  const sd = s.map(defects);
+  const better = mean(sd) <= mean(p) && cost('pilot-saver') < cost('pilot');
+  lines.push('## Saver profile trial', '',
+    '| Arm | Runs | Mean defects | Mean cost $ | Mean tokens |', '| --- | --- | --- | --- | --- |',
+    ...['pilot', 'pilot-saver'].map(a => `| ${a} | ${by(a).length} | ${mean(by(a).map(defects)).toFixed(2)} | ${cost(a).toFixed(2)} | ${Math.round(tokens(a))} |`), '',
+    `**Saver: ${better ? 'no more defects and cheaper; a candidate for the default' : 'keep pro as the default'}.**`, '');
+}
 fs.writeFileSync(path.join(BENCH, 'results', 'report.md'), lines.join('\n'));
 console.log(lines.join('\n'));

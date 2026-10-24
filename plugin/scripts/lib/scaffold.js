@@ -8,6 +8,11 @@ import { KIT_ROOT, KIT_VERSION, read, exists, writeFile, sha256, today, walk } f
 export const PILOT_ACTION_REF = 'dmv000/pilot/.github/actions/pilot-check@main';
 const T = (...p) => path.join(KIT_ROOT, 'templates', ...p);
 
+// Model profiles: pro (opusplan), max (opus), saver (sonnet, cheapest; on trial until the benchmark compares it).
+export const PROFILES = ['pro', 'max', 'saver'];
+export const PROFILE_MODELS = { pro: 'opusplan', max: 'opus', saver: 'sonnet' };
+const profileOf = answers => PROFILES.includes(answers.profile) ? answers.profile : 'pro';
+
 export const DEFAULT_CHECKS = {
   'web-ts': { fast: 'npm run check:fast', full: 'npm run check', acceptance: 'npm run test:acceptance' },
   generic: {}
@@ -45,7 +50,7 @@ export function plan(project, answers) {
   }
   add('CLAUDE.md', 'project/CLAUDE.md', 'project', true);
   add('.worktreeinclude', 'project/worktreeinclude', 'project');
-  add('.claude/settings.json', `settings:${pack}:${answers.profile === 'max' ? 'max' : 'pro'}`, 'settings', true);
+  add('.claude/settings.json', `settings:${pack}:${profileOf(answers)}`, 'settings', true);
   for (const rel of walk(T('rules', 'common'))) add(`.claude/rules/common/${rel}`, `rules/common/${rel}`, 'rule');
   if (pack === 'web-ts') for (const rel of walk(T('rules', 'web-ts'))) add(`.claude/rules/web-ts/${rel}`, `rules/web-ts/${rel}`, 'rule');
   add('.github/workflows/ci.yml', `github/ci-${pack}.yml`, 'ci');
@@ -106,7 +111,7 @@ export function apply(project, answers) {
   if (!exists(manifestFile)) {
     const manifest = {
       schemaVersion: 1, kitVersion: KIT_VERSION, templateVersion: 'v1',
-      profile: answers.profile ?? 'pro', projectType: answers.projectType ?? 'web-app', stack: answers.stack ?? 'generic',
+      profile: profileOf(answers), projectType: answers.projectType ?? 'web-app', stack: answers.stack ?? 'generic',
       hasAI: !!answers.hasAI, design: answers.design ?? 'pending', issues: answers.issues === 'local' ? 'local' : 'github', checks,
       protectedPaths: answers.protectedPaths ?? (pack === 'web-ts' ? ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'] : []),
       files

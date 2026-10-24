@@ -15,11 +15,14 @@ You are the orchestrator. You do not write production code or tests yourself. Yo
 
 Read `profile` from `.pilot/manifest.json`. Pass `model` on every Agent call:
 
-| Agent | pro | max |
-| --- | --- | --- |
-| pilot:explorer, pilot:doc-keeper | haiku | haiku |
-| pilot:researcher, pilot:test-writer, pilot:implementer | sonnet | sonnet |
-| pilot:architect, pilot:code-reviewer, pilot:security-reviewer, pilot:design-reviewer | opus | opus |
+| Agent | pro | max | saver |
+| --- | --- | --- | --- |
+| pilot:explorer, pilot:doc-keeper | haiku | haiku | haiku |
+| pilot:researcher, pilot:test-writer, pilot:implementer | sonnet | sonnet | sonnet |
+| pilot:code-reviewer, pilot:security-reviewer, pilot:design-reviewer | opus | opus | sonnet |
+| pilot:architect | opus | opus | opus |
+
+The verify-change workflow takes the reviewers' model as `reviewModel`: `sonnet` for saver, otherwise `opus`.
 
 Never use fable unless the owner approves it after two failed rounds. It bills usage credits.
 
@@ -45,7 +48,7 @@ Dispatch `pilot:implementer` once per story (template B), sequentially. It may n
 ## 4. Verify and review
 
 1. The change under review is `git diff <diffBase>` (committed and uncommitted work since the step started).
-2. Run the `verify-change` workflow with the Workflow tool (args: `{ step, frIds, diffBase, risky, ui, pluginRoot: "${CLAUDE_PLUGIN_ROOT}" }`).
+2. Run the `verify-change` workflow with the Workflow tool (args: `{ step, frIds, diffBase, risky, ui, reviewModel, pluginRoot: "${CLAUDE_PLUGIN_ROOT}" }`).
    - Set `risky` true when the diff touches auth, input handling, secrets, payments or dependencies.
    - Set `ui` true when the diff touches user-facing UI files (.tsx, .jsx, .vue, .svelte, .css, .html) and `docs/design/DESIGN.md` exists.
    - If workflows are unavailable: dispatch `pilot:code-reviewer` (template C), plus `pilot:security-reviewer` when risky, plus `pilot:design-reviewer` (template E) when ui. Combine their findings yourself, keeping only findings that affect correctness, accessibility, the design rules or a stated requirement.
@@ -64,7 +67,7 @@ Dispatch `pilot:implementer` once per story (template B), sequentially. It may n
 - Run `node "${CLAUDE_PLUGIN_ROOT}/scripts/pilot.js" trace --write` and then `check`.
 
 **Otherwise:**
-- Send the findings and failing output back to `pilot:implementer` for one more round. Then repeat step 4.
+- Send the findings and the failing lines (not the full output) back to `pilot:implementer` for one more round. Then repeat step 4.
 - After **two** failed rounds, stop. File the remaining findings with `/pilot:bug`, update HANDOFF.md, and tell the owner what is blocked and why.
 
 Either way, if a bug's root cause matches an existing LESSONS.md entry, propose a path-scoped rule in `.claude/rules/lessons/` to the owner.

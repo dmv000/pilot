@@ -92,5 +92,5 @@ Record the choice and pass it to the architect, who writes the Tech Spec section
 
 - How much should Claude do without asking? Options: ask before each phase (default); ask only for risky actions; ask before every change.
 - Quality bar: default is tests first for logic and 80% coverage on changed lines. Keep, raise, or lower?
-- Are you on the Claude Pro or Max plan? This picks the model profile.
+- Are you on the Claude Pro or Max plan? This picks the model profile. On Pro, also offer "saver": the mid-size model (Sonnet) does nearly all the work, including reviews, so usage limits last longer; it is still on trial and may catch fewer mistakes.
 - Where should bugs and blockers be tracked? Options: GitHub Issues (visible on the project's GitHub page; needs the GitHub CLI `gh` logged in on this computer); files in this project only (docs/issues/, works with just git; can move to GitHub later with /pilot:sync). Default: GitHub Issues if `gh auth status` succeeded in step 0, otherwise files only.

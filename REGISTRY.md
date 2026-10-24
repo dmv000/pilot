@@ -20,12 +20,12 @@ All rows: added 2026-10-22, designed by Claude Opus 5.5, tuned for the `pro` pro
 | SKL-02 | `plugin/skills/adopt/` | Map an existing codebase, draft docs, interview for gaps | F09, F17 | golden "existing project" test: no existing file overwritten | built | Never by platform; merge into `new` if the two flows converge |
 | SKL-03 | `plugin/skills/step/` | Run one roadmap step: tests first, implement, review, update docs | F01, F02, F12, F17, F20 | E-01, E-02, E-07, E-10 | built | A native spec-driven build loop passes the same evals |
 | SKL-04 | `plugin/skills/status/` | Progress, open issues and reminders | F05 | E-05 | built | Merged into H01 output if no one invokes it (check `/skill-doctor`) |
-| SKL-05 | `plugin/skills/bug/` | Draft and file a bug as a GitHub Issue | F01 (no silent TODOs) | T-sync, E-11 | built | — |
-| SKL-06 | `plugin/skills/problem/` | Draft and file a blocker as a GitHub Issue | F13 | T-sync | built | Merge into `bug` with a type flag if usage is low |
-| SKL-07 | `plugin/skills/sync/` | Regenerate issue mirrors from GitHub | R8 | T-sync (fixture `gh` output → expected mirrors) | built | — |
+| SKL-05 | `plugin/skills/bug/` | Draft and file a bug as a GitHub Issue, or a local record when the project keeps issues locally | F01 (no silent TODOs) | T-sync, E-11 | built | — |
+| SKL-06 | `plugin/skills/problem/` | Draft and file a blocker as a GitHub Issue, or a local record | F13 | T-sync | built | Merge into `bug` with a type flag if usage is low |
+| SKL-07 | `plugin/skills/sync/` | Regenerate issue mirrors from GitHub; move local issues to GitHub | R8 | T-sync (fixture `gh` output → expected mirrors), local-issues tests | built | — |
 | SKL-08 | `plugin/skills/handoff/` | Rewrite HANDOFF.md at the end of a session | F05 | E-05 | built | Native session handoff covers it and E-05 passes without it |
 | SKL-09 | `plugin/skills/design/` | Create design tokens, rules and preview | R9 | T-preview (render is deterministic) | built | — |
-| SKL-10 | `plugin/skills/doctor/` | Check the install, offer fixes, switch profile | F07, F08, F10 | golden doctor test on 3 OSes | built | `claude plugin` gains equivalent health checks |
+| SKL-10 | `plugin/skills/doctor/` | Check the install (gh optional), offer fixes, switch profile (pro, max, saver) | F07, F08, F10 | golden doctor test on 3 OSes | built | `claude plugin` gains equivalent health checks |
 
 ## Agents
 
@@ -49,10 +49,10 @@ All rows: added 2026-10-22, designed by Claude Opus 5.5, tuned for the `pro` pro
 | HK-02 | `plugin/hooks/scripts/guard-files.js` | Block protected files, acceptance-test edits by implementer, new skips, unreviewed "done" | F02, F06, F16, F20 | T-H02, E-02 | built | — |
 | HK-03 | `plugin/hooks/scripts/guard-bash.js` | Block secret reads, `--no-verify`, force-push, test exclusion | F02, F06 | T-H03, E-06 | built | Native permission rules can express these patterns |
 | HK-04 | `plugin/hooks/scripts/track-edits.js` | Mark the session dirty after edits | F01 | T-H04 | built | Merged into HK-05 if Stop input gains an "edited files" field |
-| HK-05 | `plugin/hooks/scripts/stop-gate.js` | Run fast checks before a turn may end with dirty code | F01, F02 | T-H05, E-01 | built | The model passes E-01 at the same rate without it (ablation) |
+| HK-05 | `plugin/hooks/scripts/stop-gate.js` | Run fast checks before a turn may end with dirty code; trimmed failure output; at most 3 fix attempts, then stop as NOT verified | F01, F02, F11 | T-H05, E-01 | built | The model passes E-01 at the same rate without it (ablation) |
 | HK-06 | `plugin/hooks/scripts/ask-guard.js` | Catch unanswered questions, log the assumption, force a re-ask | F13 | T-H06 | built | AskUserQuestion no longer auto-continues |
 | HK-07 | `plugin/hooks/scripts/injection-scan.js` | Flag instruction-like text in fetched or untrusted content | F14 | T-H07, E-09 | built | Native classifier passes E-09 without it |
-| HK-LIB | `plugin/hooks/lib/` | Shared guard (inert without manifest), manifest, state, patterns | F08 | T-guard | built | — |
+| HK-LIB | `plugin/hooks/lib/` | Shared guard (inert without manifest), manifest, state, patterns, failure-output trimming | F08 | T-guard | built | — |
 | HK-CFG | `plugin/hooks/hooks.json` | Registers HK-01..07 in exec form with `node` | F07 | `validate`, `golden` CI on Windows | built | — |
 
 ## Workflows
@@ -90,6 +90,7 @@ All rows: added 2026-10-22, designed by Claude Opus 5.5, tuned for the `pro` pro
 | MNT-05 | `plugin/migrations/` | Migration files, one per template version change (none yet: v1 is current) | F09 | C-migrate (`tests/scripts/migrate.test.js`) | built | — |
 | SKL-11 | `plugin/skills/migrate/` | Upgrade project files after a kit update: automatic for untouched files, approval for edited ones, backups, no deletes | F09, R2 | C-migrate (`tests/scripts/migrate.test.js`) | built | Claude Code gains a native, tested plugin-template migration |
 | SKL-12 | `plugin/skills/audit/` | Maintainer tool: re-check every component with the current model and Claude Code; propose keep, fix, merge or retire with evidence | R6 | T-audit (`tests/scripts/audit.test.js`) | built | — |
+| SKL-13 | `plugin/skills/debug/` | Bounded debugging: reproduce narrowly, read only what the error names, at most 3 attempts, then stop and record what was tried | F11, F12 | stop-gate attempt-cap test; benchmark cost metric | built | The model debugs within the same token cost without it (ablation) |
 | MNT-10 | `plugin/scripts/lib/migrate.js` | Migration runner: plan, line diffs, apply, chain, idempotency | F09 | C-migrate | built | — |
 | MNT-11 | `scripts/audit.js` | Audit evidence: applies the pre-registered rules to REGISTRY rows and eval history; writes the audit history | R6 | T-audit | built | — |
 | MNT-12 | `scripts/record-evals.js` | Appends each eval run's summary to docs/audits/eval-history.jsonl (used by audit and the release rule) | R6, F10 | T-audit | built | — |
