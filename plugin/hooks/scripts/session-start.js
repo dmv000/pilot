@@ -29,11 +29,18 @@ const countRows = rel => {
   if (!t) return null;
   return t.split('\n').filter(l => /^\|\s*(#\d+|LOCAL-\d+)/.test(l)).length;
 };
-const bugs = countRows('docs/issues/BUGS.md');
-const problems = countRows('docs/issues/PROBLEMS.md');
-const pending = countRows('docs/issues/PENDING.md');
-if (bugs !== null || problems !== null) parts.push(`Open bugs: ${bugs ?? 0}. Open problems: ${problems ?? 0}.`);
-if (pending) reminders.push(`${pending} issue(s) waiting in docs/issues/PENDING.md. Run /pilot:sync.`);
+if (manifest.issues === 'local') {
+  // No GitHub: the LOCAL-### rows in PENDING.md are the open issues, and there is nothing to sync.
+  const rows = (readText(p('docs/issues/PENDING.md')) ?? '').split('\n').filter(l => /^\|\s*LOCAL-\d+/.test(l));
+  const ofType = type => rows.filter(l => l.split('|')[2]?.trim() === type).length;
+  parts.push(`Open bugs: ${ofType('bug')}. Open problems: ${ofType('problem')}. (Kept locally in docs/issues/PENDING.md.)`);
+} else {
+  const bugs = countRows('docs/issues/BUGS.md');
+  const problems = countRows('docs/issues/PROBLEMS.md');
+  const pending = countRows('docs/issues/PENDING.md');
+  if (bugs !== null || problems !== null) parts.push(`Open bugs: ${bugs ?? 0}. Open problems: ${problems ?? 0}.`);
+  if (pending) reminders.push(`${pending} issue(s) waiting in docs/issues/PENDING.md. Run /pilot:sync.`);
+}
 
 if (readState(dir).dirty) reminders.push('Code changed since the last run of the fast checks; it has not yet passed the fast checks.');
 

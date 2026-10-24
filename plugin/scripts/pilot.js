@@ -68,17 +68,24 @@ const commands = {
   },
 
   // Regenerate issue mirrors. Reads GitHub through gh (read-only), or --from <file.json> for tests.
+  // With "issues": "local" in the manifest there is no GitHub: the docs/issues files are the record.
   sync() {
+    const pendingFile = path.join(project, 'docs/issues/PENDING.md');
+    const manifest = loadJson(path.join(project, '.pilot/manifest.json'));
+    if (manifest?.issues === 'local' && !opts.from) {
+      const open = (read(pendingFile) ?? '').split('\n').filter(l => /^\|\s*LOCAL-\d+/.test(l)).length;
+      out({ issues: 'local', open, note: 'This project keeps issues in docs/issues/ without GitHub; nothing to sync. To move to GitHub Issues, see /pilot:sync.' });
+      return;
+    }
     let issues;
     if (opts.from) issues = loadJson(opts.from) ?? fail(`cannot read ${opts.from}`);
     else {
       const r = spawnSync('gh', ['issue', 'list', '--state', 'all', '--limit', '500', '--json', 'number,title,state,labels,body,createdAt,closedAt'], { cwd: project, encoding: 'utf8' });
-      if (r.error || r.status !== 0) fail(`gh issue list failed: ${(r.stderr || r.error?.message || '').trim()}. Is gh installed and logged in (gh auth status)?`, 2);
+      if (r.error || r.status !== 0) fail(`gh issue list failed: ${(r.stderr || r.error?.message || '').trim()}. Is gh installed and logged in (gh auth status)? Without gh, set "issues": "local" in .pilot/manifest.json to keep issues in docs/issues/ only.`, 2);
       issues = JSON.parse(r.stdout);
     }
-    const mirrors = buildMirrors(issues);
+    const mirrors = buildMirrors(issues, read(path.join(project, 'docs/issues/RESOLVED.md')));
     for (const [rel, text] of Object.entries(mirrors)) writeFile(path.join(project, rel), text);
-    const pendingFile = path.join(project, 'docs/issues/PENDING.md');
     const pending = read(pendingFile);
     if (pending) writeFile(pendingFile, prunePending(pending, issues));
     out({ synced: Object.keys(mirrors), issues: issues.length, at: today() });
@@ -185,7 +192,8 @@ const commands = {
 
   async doctor() {
     const rows = [];
-    const add = (name, ok, detail, fix = '') => rows.push({ name, ok, detail, fix });
+    // An optional row reports WARN instead of FAIL and never fails doctor.
+    const add = (name, ok, detail, fix = '', optional = false) => rows.push({ name, ok, detail, fix, optional });
     // One command string with a shell: finds .cmd shims on Windows without passing an args array to a shell.
     const ver = (bin, flag = '--version') => { const r = spawnSync(`${bin} ${flag}`, { encoding: 'utf8', shell: true }); return r.status === 0 ? (r.stdout || r.stderr).trim().split('\n')[0] : null; };
     const num = s => (s?.match(/(\d+)\.(\d+)\.(\d+)/) ?? []).slice(1).map(Number);
@@ -196,11 +204,16 @@ const commands = {
     add('Node >= 20', atLeast(process.version, [20, 0, 0]), process.version, 'install Node 20+ from nodejs.org');
     const git = ver('git');
     add('git >= 2.31', atLeast(git, [2, 31, 0]), git ?? 'not found', 'install git');
+    const manifest = loadJson(path.join(project, '.pilot/manifest.json'));
+    // gh is optional: it only sends bugs and problems to GitHub Issues.
     const gh = ver('gh');
     const ghAuth = gh ? spawnSync('gh auth status', { encoding: 'utf8', shell: true }).status === 0 : false;
-    add('gh installed and logged in', !!gh && ghAuth, gh ? (ghAuth ? gh : `${gh}, not logged in`) : 'not found', gh ? 'gh auth login' : 'install GitHub CLI: https://cli.github.com');
+    const local = manifest?.issues === 'local';
+    const ghDetail = gh ? (ghAuth ? gh : `${gh}, not logged in`) : 'not found';
+    add('gh (optional, for GitHub Issues)', local || (!!gh && ghAuth),
+      local ? `not needed: this project keeps issues in docs/issues/ (${ghDetail})` : `${ghDetail}${gh && ghAuth ? '' : '; until it works, new issues wait in docs/issues/PENDING.md'}`,
+      gh ? 'gh auth login, or set "issues": "local" in .pilot/manifest.json' : 'install GitHub CLI (https://cli.github.com), or set "issues": "local" in .pilot/manifest.json', true);
 
-    const manifest = loadJson(path.join(project, '.pilot/manifest.json'));
     if (!manifest) add('.pilot/manifest.json', false, 'missing', 'run /pilot:new or /pilot:adopt');
     else {
       const errs = validate(schema('manifest'), manifest);
@@ -230,8 +243,8 @@ const commands = {
       add('bench: login token file', exists(tokenFile), tokenFile, 'claude setup-token, then save it to that file with chmod 600');
     }
     if (opts.json) out(rows);
-    else out(rows.map(r => `${r.ok ? 'PASS' : 'FAIL'}  ${r.name}: ${r.detail}${!r.ok && r.fix ? `\n      fix: ${r.fix}` : ''}`).join('\n'));
-    process.exit(rows.every(r => r.ok) ? 0 : 1);
+    else out(rows.map(r => `${r.ok ? 'PASS' : r.optional ? 'WARN' : 'FAIL'}  ${r.name}: ${r.detail}${!r.ok && r.fix ? `\n      fix: ${r.fix}` : ''}`).join('\n'));
+    process.exit(rows.every(r => r.ok || r.optional) ? 0 : 1);
   }
 };
 

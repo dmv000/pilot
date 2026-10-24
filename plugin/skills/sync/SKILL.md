@@ -1,11 +1,13 @@
 ---
 name: sync
-description: Rebuild docs/issues mirrors (BUGS, PROBLEMS, RESOLVED) from GitHub Issues and file pending offline items.
+description: Rebuild docs/issues mirrors (BUGS, PROBLEMS, RESOLVED) from GitHub Issues and file pending offline items. Also moves a project from local issues to GitHub Issues.
 disable-model-invocation: true
-allowed-tools: Bash(node *scripts/pilot.js*), Bash(gh issue list *)
+allowed-tools: Bash(node *scripts/pilot.js*), Bash(gh issue list *), Bash(gh auth status)
 ---
 
 # /pilot:sync
+
+If `issues` in `.pilot/manifest.json` is `local`, the project keeps its issues in `docs/issues/` without GitHub and there is nothing to sync. Report the open local bugs and problems from PENDING.md. Then offer, in one plain sentence, to move them to GitHub Issues; this needs the GitHub CLI (`gh`) logged in. Only if the owner agrees and `gh auth status` succeeds, change `issues` to `github` in the manifest (the owner approves the edit) and continue below. Items under "Resolved without GitHub" in RESOLVED.md stay where they are.
 
 1. Run `node "${CLAUDE_PLUGIN_ROOT}/scripts/pilot.js" sync`. It only reads from GitHub.
 2. If `docs/issues/PENDING.md` still has `LOCAL-###` rows, file each one:

@@ -13,7 +13,9 @@ Status: **0.1.0, pre-release.** The benchmark against plain Claude Code has not 
 
 ## Install
 
-Requirements: Claude Code 2.1.295 or later, Node.js 20+ on your PATH, git, and the GitHub CLI (`gh`) logged in.
+Requirements: Claude Code 2.1.295 or later, Node.js 20+ on your PATH, and git. Installing and updating pilot use git only.
+
+The GitHub CLI (`gh`) is optional. It is used only to send bugs and blockers to GitHub Issues. Without it, `/pilot:new` sets the project to keep them as files in `docs/issues/`, and you can move them to GitHub later with `/pilot:sync`.
 
 ```bash
 claude plugin install pilot --marketplace dmv000/pilot
@@ -37,8 +39,8 @@ Auto-update is off by default, so you choose when the kit's code changes. Read t
 | `/pilot:adopt` | Same, for a project that already has code: maps it first, then asks only about the gaps |
 | `/pilot:step <n>` | Builds one roadmap step: acceptance tests, implementation, review, progress update |
 | `/pilot:status` | Progress, open bugs and problems, reminders |
-| `/pilot:bug`, `/pilot:problem` | Files a GitHub Issue (you approve each one) and updates the local mirror |
-| `/pilot:sync` | Rebuilds the local mirrors of GitHub Issues |
+| `/pilot:bug`, `/pilot:problem` | Files a GitHub Issue (you approve each one) and updates the local mirror, or records it in `docs/issues/` when the project keeps issues locally |
+| `/pilot:sync` | Rebuilds the local mirrors of GitHub Issues, or moves locally kept issues to GitHub |
 | `/pilot:handoff` | Writes the state for the next session |
 | `/pilot:design` | Creates the design system from the kit's templates: rules in DESIGN.md, values in tokens.json (contrast-checked), a generated preview page |
 | `/pilot:migrate` | After a kit update, upgrades the project's pilot files: automatic for files you never edited, your approval for the rest, with backups |

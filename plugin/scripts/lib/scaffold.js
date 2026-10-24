@@ -107,7 +107,7 @@ export function apply(project, answers) {
     const manifest = {
       schemaVersion: 1, kitVersion: KIT_VERSION, templateVersion: 'v1',
       profile: answers.profile ?? 'pro', projectType: answers.projectType ?? 'web-app', stack: answers.stack ?? 'generic',
-      hasAI: !!answers.hasAI, design: answers.design ?? 'pending', checks,
+      hasAI: !!answers.hasAI, design: answers.design ?? 'pending', issues: answers.issues === 'local' ? 'local' : 'github', checks,
       protectedPaths: answers.protectedPaths ?? (pack === 'web-ts' ? ['package-lock.json', 'pnpm-lock.yaml', 'yarn.lock'] : []),
       files
     };

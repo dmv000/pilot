@@ -15,7 +15,11 @@ const section = (body, name) => {
 const hasLabel = (issue, name) => (issue.labels ?? []).some(l => (l.name ?? l) === name);
 const day = s => (s ?? '').slice(0, 10) || '-';
 
-export function buildMirrors(issues) {
+// Issues resolved while the project kept issues locally live under this heading in RESOLVED.md.
+// They never existed on GitHub, so a sync keeps them instead of regenerating them away.
+export const LOCAL_RESOLVED = '## Resolved without GitHub';
+
+export function buildMirrors(issues, previousResolved = '') {
   const open = issues.filter(i => (i.state ?? '').toUpperCase() === 'OPEN');
   const closed = issues.filter(i => (i.state ?? '').toUpperCase() === 'CLOSED');
   const byNum = (a, b) => a.number - b.number;
@@ -27,7 +31,9 @@ export function buildMirrors(issues) {
     '| # | Title | Root cause | Regression test | Closed |\n| --- | --- | --- | --- | --- |\n' +
     closed.filter(i => hasLabel(i, 'bug') || hasLabel(i, 'problem')).sort(byNum)
       .map(i => `| #${i.number} | ${cell(i.title)} | ${cell(section(i.body, 'Root cause'))} | ${cell(section(i.body, 'Regression test'))} | ${day(i.closedAt)} |`).join('\n') + '\n';
-  return { 'docs/issues/BUGS.md': bugs, 'docs/issues/PROBLEMS.md': problems, 'docs/issues/RESOLVED.md': resolved };
+  const at = (previousResolved ?? '').indexOf(LOCAL_RESOLVED);
+  const kept = at === -1 ? '' : '\n' + previousResolved.slice(at).trimEnd() + '\n';
+  return { 'docs/issues/BUGS.md': bugs, 'docs/issues/PROBLEMS.md': problems, 'docs/issues/RESOLVED.md': resolved + kept };
 }
 
 /** Remove PENDING.md rows whose LOCAL id now appears in an issue body ("pilot-local-id: LOCAL-001"). */

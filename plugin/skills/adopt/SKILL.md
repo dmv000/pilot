@@ -2,7 +2,7 @@
 name: adopt
 description: Bring an existing codebase under pilot. Maps the code, drafts docs from what exists, then interviews the owner only for the gaps. Never overwrites existing files.
 disable-model-invocation: true
-allowed-tools: Bash(node *scripts/pilot.js*), Bash(git status), Bash(git log *)
+allowed-tools: Bash(node *scripts/pilot.js*), Bash(git status), Bash(git log *), Bash(gh auth status)
 ---
 
 # /pilot:adopt — existing project
@@ -36,6 +36,7 @@ Use the question bank in `../new/questions.md`, with the same plain-language rul
 - design status
 - the working agreement
 - the three check commands, if not found
+- where to track bugs: GitHub Issues or files in docs/issues/ only (the last question of Phase 12; run `gh auth status` first to pick the default)
 
 Then play back a summary and get confirmation.
 

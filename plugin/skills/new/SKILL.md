@@ -3,7 +3,7 @@ name: new
 description: Start a new project with pilot. Interviews the owner in depth, then creates the requirements, planning and quality docs and the project config.
 disable-model-invocation: true
 argument-hint: "[one-line idea]"
-allowed-tools: Bash(node *scripts/pilot.js*), Bash(git status), Bash(git log *)
+allowed-tools: Bash(node *scripts/pilot.js*), Bash(git status), Bash(git log *), Bash(gh auth status)
 ---
 
 # /pilot:new — interview, then project docs
@@ -16,6 +16,7 @@ You run this in the main session. Subagents cannot ask the owner questions, so n
 
 1. If `.pilot/manifest.json` exists, stop: this is already a pilot project. Suggest `/pilot:status`.
 2. If the folder has source files or `git log` shows commits, stop and suggest `/pilot:adopt` instead. Say why in one sentence.
+3. Run `gh auth status`. Whether it succeeds sets the default for the issue-tracking question in Phase 12. gh is optional; never ask the owner to install it.
 
 ## 1. Interview
 
@@ -42,10 +43,11 @@ Save the answers to `.pilot/tmp/interview.json`:
 ```json
 { "project_name": "", "projectType": "web-app|mobile-app|script|os|ai-system|other", "stack": "web-ts|generic",
   "stack_summary": "", "profile": "pro|max", "hasAI": false, "design": "pending|not-applicable",
-  "checks": { "fast": "", "full": "", "acceptance": "" }, "autonomy": "", "assumptions": [] }
+  "issues": "github|local", "checks": { "fast": "", "full": "", "acceptance": "" }, "autonomy": "", "assumptions": [] }
 ```
 
 - `stack` is `web-ts` only for TypeScript/JavaScript web projects; everything else is `generic`, with `checks` filled from the owner's answers.
+- `issues` is the owner's Phase 12 answer: `github` (GitHub Issues through gh) or `local` (files in docs/issues/ only).
 - `profile` is `pro` unless the owner said they are on Max.
 
 Then show what will be created:
