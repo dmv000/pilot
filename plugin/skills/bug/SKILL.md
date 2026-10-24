@@ -1,6 +1,6 @@
 ---
 name: bug
-description: Record a defect as a GitHub Issue (label bug), or in docs/issues/ when the project keeps issues locally, and refresh the local mirror. Use when a bug is found or reported, or instead of leaving a TODO.
+description: Record a defect (GitHub Issue, or docs/issues/ when local). Use when a bug is found or reported, or instead of leaving a TODO.
 argument-hint: "<short description>"
 allowed-tools: Bash(node *scripts/pilot.js*), Bash(gh issue list *), Bash(gh issue view *)
 ---

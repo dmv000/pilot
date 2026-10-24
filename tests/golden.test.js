@@ -69,3 +69,24 @@ test('new projects get the architecture and scale sections, and the interview gu
   for (const s of ['Clean / hexagonal', 'Modular monolith', 'Microservices', 'Circuit breaker', 'Read replicas']) assert.ok(guide.includes(s), s);
   assert.match(fs.readFileSync(path.join(PLUGIN, 'skills/new/questions.md'), 'utf8'), /^## Phase 7b — Architecture and scale$/m);
 });
+
+test('the pattern catalogue covers all 22 classic patterns, and every big system cites a source', () => {
+  const NEW = path.join(PLUGIN, 'skills/new');
+  const patterns = fs.readFileSync(path.join(NEW, 'patterns.md'), 'utf8');
+  const gof = ['factory-method', 'abstract-factory', 'builder', 'prototype', 'singleton', 'adapter', 'bridge', 'composite', 'decorator', 'facade', 'flyweight', 'proxy',
+    'chain-of-responsibility', 'command', 'iterator', 'mediator', 'memento', 'observer', 'state', 'strategy', 'template-method', 'visitor'];
+  for (const slug of gof) assert.ok(patterns.includes(`(https://refactoring.guru/design-patterns/${slug})`), slug);
+  for (const p of ['Sharding', 'Consistent hashing', 'Fan-out on write', 'Actor model', 'Cell-based']) assert.ok(patterns.includes(p), p);
+
+  const systems = fs.readFileSync(path.join(NEW, 'big-systems.md'), 'utf8');
+  const rows = systems.split('\n').filter(l => /^\| \*\*/.test(l));
+  for (const name of ['Meta', 'WhatsApp', 'YouTube', 'Netflix', 'X (Twitter)', 'Discord', 'Telegram', 'Uber', 'Amazon', 'Shopify']) {
+    const row = rows.find(r => r.includes(`**${name}`));
+    assert.ok(row, name);
+    assert.match(row.split('|').at(-2), /\]\(https:\/\//, `${name} has a source link`);
+  }
+  // Every relative link between the interview guides points at a file that ships.
+  for (const f of fs.readdirSync(NEW).filter(f => f.endsWith('.md'))) {
+    for (const [, target] of fs.readFileSync(path.join(NEW, f), 'utf8').matchAll(/\]\(([^)#:]+\.md)\)/g)) assert.ok(fs.existsSync(path.join(NEW, target)), `${f} -> ${target}`);
+  }
+});

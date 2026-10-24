@@ -1,6 +1,6 @@
 ---
 name: problem
-description: Record a blocker or open decision as a GitHub Issue (label problem), or in docs/issues/ when the project keeps issues locally. Use when work is blocked or needs the owner's decision.
+description: Record a blocker or open decision (GitHub Issue, or docs/issues/ when local). Use when work is blocked or needs the owner's decision.
 argument-hint: "<what is blocked>"
 allowed-tools: Bash(node *scripts/pilot.js*), Bash(gh issue list *)
 ---

@@ -2,7 +2,7 @@
 
 Purpose: what Claude uses to ask good architecture questions, explain the options in plain language, and recommend the simplest architecture that meets the project's real needs.
 Read this when: the interview reaches "Architecture and scale" (questions.md), the architect agent drafts TECH-SPEC.md, or /pilot:adopt maps an existing system.
-Related files: questions.md (phase 7b), docs/requirements/TECH-SPEC.md (where the choice is recorded), docs/decisions/ (the ADR)
+Related files: questions.md (phase 7b), patterns.md (every code and system pattern, one line each), big-systems.md (how the highest-traffic companies are built; tier 2 and 3 only), docs/requirements/TECH-SPEC.md (where the choice is recorded), docs/decisions/ (the ADR)
 
 ## The rule that comes first
 
@@ -49,7 +49,7 @@ Non-web projects:
 | Saga | Multi-step workflows across services with compensating steps | Microservices only |
 | Cache-aside | Read from cache first, fall back to the database, then fill the cache | Hot read paths |
 
-Say why each pattern in TECH-SPEC.md is needed. A pattern with no named problem is removed.
+Say why each pattern in TECH-SPEC.md is needed. A pattern with no named problem is removed. For any other pattern, including the 22 classic code patterns and the large-scale system patterns, read its row in [patterns.md](patterns.md).
 
 ## 3. Handling heavy load: the scale toolkit, in the order to reach for it
 
@@ -75,6 +75,8 @@ The techniques, in plain words:
 - **Partitioning or sharding:** split data by key (customer, region) when one database cannot hold or serve it all.
 - **Observability:** logs, metrics and traces, with alerts on SLOs such as "99% of requests under 300 ms". You cannot scale what you cannot see.
 - **Load testing:** a script (for example k6) that proves the NFR numbers before launch and after big changes.
+
+At tier 2 or 3, [big-systems.md](big-systems.md) shows how Meta, WhatsApp, YouTube, Netflix, X, Discord, Telegram, Uber, Amazon and Shopify applied these techniques, and which patterns each is known for. Use it to explain a technique with a real example, never as the target design.
 
 ## 4. Turning the choice into enforced rules
 

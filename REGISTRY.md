@@ -16,7 +16,7 @@ All rows: added 2026-10-22, designed by Claude Opus 5.5, tuned for the `pro` pro
 
 | ID | Path | Purpose | Prevents | Check | Status | Retire when |
 | --- | --- | --- | --- | --- | --- | --- |
-| SKL-01 | `plugin/skills/new/` | Interview (including architecture and scale, guided by architecture.md), then project docs and config | F13, F17 | E-08, golden project install test | built | Claude Code ships an equivalent project-setup interview and E-08 passes without this skill |
+| SKL-01 | `plugin/skills/new/` | Interview (including architecture and scale, guided by architecture.md, patterns.md and, at tier 2-3, big-systems.md; asks where to track issues), then project docs and config | F13, F17 | E-08, golden project install test | built | Claude Code ships an equivalent project-setup interview and E-08 passes without this skill |
 | SKL-02 | `plugin/skills/adopt/` | Map an existing codebase, draft docs, interview for gaps | F09, F17 | golden "existing project" test: no existing file overwritten | built | Never by platform; merge into `new` if the two flows converge |
 | SKL-03 | `plugin/skills/step/` | Run one roadmap step: tests first, implement, review, update docs | F01, F02, F12, F17, F20 | E-01, E-02, E-07, E-10 | built | A native spec-driven build loop passes the same evals |
 | SKL-04 | `plugin/skills/status/` | Progress, open issues and reminders | F05 | E-05 | built | Merged into H01 output if no one invokes it (check `/skill-doctor`) |

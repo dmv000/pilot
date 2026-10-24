@@ -1,6 +1,6 @@
 ---
 name: sync
-description: Rebuild docs/issues mirrors (BUGS, PROBLEMS, RESOLVED) from GitHub Issues and file pending offline items. Also moves a project from local issues to GitHub Issues.
+description: Rebuild docs/issues mirrors from GitHub Issues, file pending items, or move local issues to GitHub.
 disable-model-invocation: true
 allowed-tools: Bash(node *scripts/pilot.js*), Bash(gh issue list *), Bash(gh auth status)
 ---

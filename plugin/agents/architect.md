@@ -19,7 +19,7 @@ Method:
    - context diagram (C4 level 1, Mermaid)
    - constraints
    - **Architecture style:** style, why (tied to IDs), load tier, dependency rule, the fitness function that enforces it, revisit-when
-   - **Design patterns:** only patterns that solve a named problem
+   - **Design patterns:** only patterns that solve a named problem. Use the names in `${CLAUDE_PLUGIN_ROOT}/skills/new/patterns.md`, reading only the rows you need; at tier 2 or 3, `big-systems.md` beside it gives real examples
    - **Scalability and load:** only the techniques for the chosen tier, each with the test that proves it
    - solution strategy
    - one "### Module: <name>" section per module, with responsibility, public interface and the IDs it serves

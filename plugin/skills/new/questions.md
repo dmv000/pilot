@@ -56,7 +56,7 @@ Read [architecture.md](architecture.md) before this phase. Ask about needs first
 
 Then:
 1. Pick the load tier from architecture.md section 3.
-2. Propose one architecture style from section 1 and the few patterns from section 2 that solve named problems. Give each in one plain sentence with its cost. Offer one simpler and one more scalable alternative.
+2. Propose one architecture style from section 1 and the few patterns from section 2 that solve named problems. Give each in one plain sentence with its cost. Offer one simpler and one more scalable alternative. At tier 2 or 3, read [big-systems.md](big-systems.md) and name the one or two big systems that faced the same problem.
 3. If the owner says "I don't know", recommend the simplest style that meets the answers, usually a modular monolith with clean-architecture layers inside. Log it in ASSUMPTIONS.md.
 4. Turn the load answers into NFRs with numbers in SRS.md: capacity, latency, availability and a load test.
 
